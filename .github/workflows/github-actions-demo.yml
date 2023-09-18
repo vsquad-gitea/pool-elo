@@ -86,7 +86,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.REGISTRY_HOST }}/test/test:${{ gitea.ref_name }}
+          tags: ${{ secrets.REGISTRY_HOST }}/vsquad/pool-elo:${{ gitea.ref_name }}
 
       - name: Trigger deployment
         uses: fjogeleit/http-request-action@v1
