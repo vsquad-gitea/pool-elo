@@ -1,0 +1,16 @@
+{
+  "name": "pool-elo",
+  "version": "1.0.0",
+  "description": "pool-elo",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tailwindcss -i ./style/tailwind.css -o ./static/style.css",
+    "watch": "npx tailwindcss -i ./style/tailwind.css -o ./static/style.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.3.3"
+  }
+}
