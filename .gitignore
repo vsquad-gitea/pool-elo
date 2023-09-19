@@ -5,3 +5,4 @@ target
 static
 pkg 
 ./Cargo.lock
+package-lock.json
