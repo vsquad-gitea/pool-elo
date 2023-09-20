@@ -1,7 +1,6 @@
 use crate::components::layout::Layout;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::fs;
 use sycamore::prelude::*;
 
 // Reactive page

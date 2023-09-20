@@ -1,5 +1,6 @@
 mod components;
 mod templates;
+mod data;
 mod error_views;
 
 use perseus::prelude::*;
@@ -7,7 +8,6 @@ use sycamore::prelude::view;
 
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
-    use log::{info, warn};
     env_logger::init();
 
     PerseusApp::new()
