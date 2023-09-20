@@ -47,15 +47,10 @@ pub fn Layout<'a, G: Html>(
         main(style = "my-8") {
             div(class = "container mx-auto px-6") {
                 div(class = "md:flex mt-8 md:-mx-4") {
-                    div(class = "h-64 rounded-md overflow-hidden bg-cover bg-center") {
+                    div(class = "rounded-md overflow-hidden bg-cover bg-center") {
                         (children)
                     }
                 }
-            }
-        }
-        footer(class = "bg-gray-200") {
-            p(class = "container mx-auto px-6 py-3 flex justify-between items-center"){
-                "Hey there, I'm a footer!"
             }
         }
     }
