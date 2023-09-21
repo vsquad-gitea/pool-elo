@@ -6,6 +6,7 @@ use crate::data::store::DATA;
 #[cfg(engine)]
 use std::thread;
 use sycamore::prelude::*;
+use crate::data::global_state::AppStateRx;
 
 use crate::data::pool_match::{
     PoolMatchList, PoolMatch
@@ -16,16 +17,19 @@ use crate::data::pool_match::{
 #[derive(Serialize, Deserialize, Clone, ReactiveState)]
 #[rx(alias = "PageStateRx")]
 struct PageState {
-    matches: PoolMatchList,
+
 }
 
 fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
+    let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+
     view! { cx,
         Layout(title = "Overall Leaderboard") {
             // Anything we put in here will be rendered inside the `<main>` block of the layout
             ul {
                 (View::new_fragment(
-                    state.matches.get()
+                    global_state.store.get()
+                        .matches
                         .pool_matches
                         .iter()
                         .rev()
@@ -50,20 +54,7 @@ async fn get_request_state(
     _info: StateGeneratorInfo<()>,
     req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
-
-    let matches = thread::spawn(move || {
-        let mut db = DATA.lock().unwrap();
-        db.matches.pool_matches.push(PoolMatch {
-            players: vec![],
-            winner: "lol".to_string(),
-        });
-        db.write();
-        db.matches.clone()
-    }).join().unwrap();
-
-    Ok(PageState {
-        matches
-    })
+    Ok(PageState {})
 }
 
 #[engine_only_fn]
