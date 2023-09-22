@@ -1,28 +1,26 @@
 mod components;
-mod templates;
 mod data;
+mod endpoints;
 mod error_views;
 #[cfg(engine)]
-mod handler;
-mod endpoints;
+mod server;
+mod templates;
 
 use perseus::prelude::*;
 use sycamore::prelude::view;
 
-#[cfg(engine)]
-use axum::routing::post;
-#[cfg(engine)]
-use perseus::{
-    i18n::TranslationsManager,
-    server::ServerOptions,
-    stores::MutableStore,
-    turbine::Turbine,
-};
-#[cfg(engine)]
-use crate::endpoints::MATCH;
-#[cfg(engine)]
-use crate::handler::post_match;
-
+cfg_if::cfg_if! {
+    if #[cfg(engine)] {
+        use std::net::SocketAddr;
+        use perseus::{
+            i18n::TranslationsManager,
+            server::ServerOptions,
+            stores::MutableStore,
+            turbine::Turbine,
+        };
+        use crate::server::routes::register_routes;
+    }
+}
 
 #[cfg(engine)]
 pub async fn dflt_server<M: MutableStore + 'static, T: TranslationsManager + 'static>(
@@ -30,13 +28,12 @@ pub async fn dflt_server<M: MutableStore + 'static, T: TranslationsManager + 'st
     opts: ServerOptions,
     (host, port): (String, u16),
 ) {
-    use std::net::SocketAddr;
-
     let addr: SocketAddr = format!("{}:{}", host, port)
         .parse()
         .expect("Invalid address provided to bind to.");
     let mut app = perseus_axum::get_router(turbine, opts).await;
-    app = app.route(MATCH, post(post_match));
+
+    app = register_routes(app);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

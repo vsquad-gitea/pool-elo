@@ -1,11 +1,9 @@
+// (Server only) In-memory data storage and persistent storage
 
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
-use serde::{Serialize, Deserialize};
 use crate::data::pool_match::PoolMatchList;
-use std::fs;
-use std::path::Path;
-
+use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use std::{fs, path::Path, sync::Mutex};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Store {
@@ -16,11 +14,9 @@ impl Store {
     fn new() -> Store {
         fs::create_dir_all("data").unwrap();
         match Path::new("data/store.json").exists() {
-            false => {
-                Store {
-                    matches: PoolMatchList { pool_matches: vec![] },
-                }
-            }
+            false => Store {
+                matches: PoolMatchList::new(),
+            },
             true => {
                 let contents = fs::read_to_string("data/store.json").unwrap();
                 serde_json::from_str(&contents).unwrap()
@@ -35,6 +31,4 @@ impl Store {
     }
 }
 
-pub static DATA: Lazy<Mutex<Store>> = Lazy::new(|| {
-    Mutex::new(Store::new())
-});
+pub static DATA: Lazy<Mutex<Store>> = Lazy::new(|| Mutex::new(Store::new()));

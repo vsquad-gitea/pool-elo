@@ -1,8 +1,8 @@
-use crate::components::layout::Layout;
+use crate::{components::layout::Layout, data::pool_match::MatchData};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
-use web_sys::{Event};
+use web_sys::Event;
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
@@ -10,9 +10,9 @@ cfg_if::cfg_if! {
         use crate::templates::global_state::AppStateRx;
         use crate::endpoints::MATCH;
         use crate::templates::get_api_path;
+        use chrono::Utc;
     }
 }
-
 
 // Reactive page
 
@@ -22,20 +22,16 @@ struct PageState {
     name: String,
 }
 
-
 fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
-
     let handle_add_match = move |_event: Event| {
         #[cfg(client)]
         {
+            // state.name.get().as_ref().clone()
             spawn_local_scoped(cx, async move {
-                let new_match = PoolMatch {
-                    players: vec![],
-                    winner: state.name.get().as_ref().clone(),
-                };
-
+                let new_match = PoolMatch::new(MatchData::Standard8Ball { winner: 1, loser: 2 }, Utc::now());
                 let client = reqwest::Client::new();
-                let new_matches = client.post(get_api_path(MATCH).as_str())
+                let new_matches = client
+                    .post(get_api_path(MATCH).as_str())
                     .json(&new_match)
                     .send()
                     .await
@@ -45,7 +41,6 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
                     .unwrap();
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
                 global_state.matches.set(new_matches);
-
             })
         }
     };
@@ -75,7 +70,9 @@ async fn get_request_state(
     _info: StateGeneratorInfo<()>,
     _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
-    Ok(PageState { name: "Ferris".to_string() })
+    Ok(PageState {
+        name: "Ferris".to_string(),
+    })
 }
 
 #[engine_only_fn]

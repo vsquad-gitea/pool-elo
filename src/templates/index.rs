@@ -20,8 +20,5 @@ fn head(cx: Scope) -> View<SsrNode> {
 }
 
 pub fn get_template<G: Html>() -> Template<G> {
-    Template::build("")
-        .view(index_page)
-        .head(head)
-        .build()
+    Template::build("").view(index_page).head(head).build()
 }

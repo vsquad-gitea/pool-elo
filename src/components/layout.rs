@@ -2,9 +2,7 @@ use sycamore::prelude::*;
 
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {
-    /// The title of the page, which will be displayed in the header.
     pub title: &'a str,
-    /// The content to put inside the layout.
     pub children: Children<'a, G>,
 }
 
@@ -15,11 +13,7 @@ pub fn Layout<'a, G: Html>(
 ) -> View<G> {
     let children = children.call(cx);
 
-    // example params
-    // p { (title.to_string()) }
-
     view! { cx,
-        // These elements are styled with bright colors for demonstration purposes
         header {
             div (class = "flex items-center justify-between") {
                 div (class = "w-full text-gray-700 md:text-center text-2xl font-semibold") {
