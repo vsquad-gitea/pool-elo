@@ -6,4 +6,4 @@ static
 pkg 
 ./Cargo.lock
 package-lock.json
-data
+/data/
