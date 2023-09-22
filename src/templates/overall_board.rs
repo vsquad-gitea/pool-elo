@@ -1,16 +1,8 @@
 use crate::components::layout::Layout;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
-#[cfg(engine)]
-use crate::data::store::DATA;
-#[cfg(engine)]
-use std::thread;
 use sycamore::prelude::*;
-use crate::data::global_state::AppStateRx;
-
-use crate::data::pool_match::{
-    PoolMatchList, PoolMatch
-};
+use crate::templates::global_state::AppStateRx;
 
 // Reactive page
 
@@ -20,7 +12,7 @@ struct PageState {
 
 }
 
-fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
+fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageStateRx) -> View<G> {
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     view! { cx,
@@ -28,13 +20,12 @@ fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
             // Anything we put in here will be rendered inside the `<main>` block of the layout
             ul {
                 (View::new_fragment(
-                    global_state.store.get()
-                        .matches
+                    global_state.matches.get()
                         .pool_matches
                         .iter()
                         .rev()
                         .enumerate()
-                        .map(|(index, item)| {
+                        .map(|(_index, item)| {
                             let game = item.clone();
                             view! { cx,
                                 li {
@@ -52,7 +43,7 @@ fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
 #[engine_only_fn]
 async fn get_request_state(
     _info: StateGeneratorInfo<()>,
-    req: Request,
+    _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
     Ok(PageState {})
 }

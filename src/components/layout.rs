@@ -11,7 +11,7 @@ pub struct LayoutProps<'a, G: Html> {
 #[component]
 pub fn Layout<'a, G: Html>(
     cx: Scope<'a>,
-    LayoutProps { title, children }: LayoutProps<'a, G>,
+    LayoutProps { title: _, children }: LayoutProps<'a, G>,
 ) -> View<G> {
     let children = children.call(cx);
 

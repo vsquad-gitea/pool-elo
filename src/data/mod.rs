@@ -1,3 +1,4 @@
 pub mod pool_match;
+
+#[cfg(engine)]
 pub mod store;
-pub mod global_state;

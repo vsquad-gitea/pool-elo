@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use serde::{Serialize, Deserialize};
-use crate::data::pool_match::{PoolMatchList, PoolMatch};
+use crate::data::pool_match::PoolMatchList;
 use std::fs;
 use std::path::Path;
 
@@ -14,7 +14,7 @@ pub struct Store {
 
 impl Store {
     fn new() -> Store {
-        fs::create_dir_all("data");
+        fs::create_dir_all("data").unwrap();
         match Path::new("data/store.json").exists() {
             false => {
                 Store {
@@ -27,6 +27,8 @@ impl Store {
             }
         }
     }
+    // TODO -> Store data
+    #[allow(dead_code)]
     pub fn write(&self) {
         let contents = serde_json::to_string(&self).unwrap();
         fs::write("data/store.json", contents).unwrap();
