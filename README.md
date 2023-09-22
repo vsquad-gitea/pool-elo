@@ -23,7 +23,7 @@ https://nodejs.org/en
 ## 3. Install Perseus, for real-time updates while developing
 
 `cargo install perseus-cli`
-`cargo build --target wasm32-unknown-unknown`
+`rustup target add wasm32-unknown-unknown`
 
 ## 4. Install tailwindcss, for styling
 
@@ -43,7 +43,7 @@ To build CSS run:
 `npm run build`
 
 To build the project for testing, run
-`perseus serve`
+`perseus serve --verbose`
 
 # Deploying the project
 

@@ -3,18 +3,13 @@ use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 
-// Reactive page
-
 #[derive(Serialize, Deserialize, Clone, ReactiveState)]
 #[rx(alias = "PageStateRx")]
-struct PageState {
+struct PageState {}
 
-}
-
-fn one_v_one_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
+fn one_v_one_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageStateRx) -> View<G> {
     view! { cx,
         Layout(title = "1v1 Leaderboard") {
-            // Anything we put in here will be rendered inside the `<main>` block of the layout
             p { "leaderboard" }
         }
     }
@@ -23,7 +18,7 @@ fn one_v_one_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageSt
 #[engine_only_fn]
 async fn get_request_state(
     _info: StateGeneratorInfo<()>,
-    req: Request,
+    _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
     Ok(PageState {})
 }
@@ -34,9 +29,6 @@ fn head(cx: Scope) -> View<SsrNode> {
         title { "1v1 Leaderboard" }
     }
 }
-
-
-// Template
 
 pub fn get_template<G: Html>() -> Template<G> {
     Template::build("one-v-one-board")
