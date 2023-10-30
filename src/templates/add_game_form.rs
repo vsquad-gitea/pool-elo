@@ -1,3 +1,4 @@
+use crate::data::pool_match::MatchType;
 use crate::{components::layout::Layout, data::pool_match::MatchData};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -28,7 +29,14 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
         {
             // state.name.get().as_ref().clone()
             spawn_local_scoped(cx, async move {
-                let new_match = PoolMatch::new(MatchData::Standard8Ball { winner: 1, loser: 2 }, Utc::now());
+                let new_match = PoolMatch::new(
+                    MatchData {
+                        type_: MatchType::Standard8Ball,
+                        winners: vec![1],
+                        losers: vec![2, 3, 4],
+                    },
+                    Utc::now(),
+                );
                 let client = reqwest::Client::new();
                 let new_matches = client
                     .post(get_api_path(MATCH).as_str())
