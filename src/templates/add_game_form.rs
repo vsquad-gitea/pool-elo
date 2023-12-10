@@ -7,9 +7,9 @@ use web_sys::Event;
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
-        use crate::data::pool_match::{PoolMatch, PoolMatchList};
+        use crate::data::pool_match::{PoolMatch, PoolMatchList, UserList};
         use crate::templates::global_state::AppStateRx;
-        use crate::endpoints::MATCH;
+        use crate::endpoints::{MATCH, USER};
         use crate::templates::get_api_path;
         use chrono::Utc;
     }
@@ -20,14 +20,15 @@ cfg_if::cfg_if! {
 #[derive(Serialize, Deserialize, Clone, ReactiveState)]
 #[rx(alias = "PageStateRx")]
 struct PageState {
-    name: String,
+    winner: String,
+    new_user: String,
 }
 
 fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
     let handle_add_match = move |_event: Event| {
         #[cfg(client)]
         {
-            // state.name.get().as_ref().clone()
+            // state.winner.get().as_ref().clone()
             spawn_local_scoped(cx, async move {
                 let new_match = PoolMatch::new(
                     MatchData {
@@ -53,10 +54,37 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
         }
     };
 
+    let handle_add_user = move |_event: Event| {
+        #[cfg(client)]
+        {
+            // state.winner.get().as_ref().clone()
+            spawn_local_scoped(cx, async move {
+                let client = reqwest::Client::new();
+                let new_users = client
+                    .post(get_api_path(USER).as_str())
+                    .body(state.new_user.get().as_ref().clone())
+                    .send()
+                    .await
+                    .unwrap()
+                    .json::<UserList>()
+                    .await
+                    .unwrap();
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                global_state.users.set(new_users);
+            })
+        }
+    };
+
     view! { cx,
         Layout(title = "Add Game Results") {
             div (class = "flex flex-wrap") {
-                input (bind:value = state.name,
+                select {
+                    option (value="red")
+                    option (value="blue")
+                }
+            }
+            div (class = "flex flex-wrap") {
+                input (bind:value = state.winner,
                        class = "appearance-none block w-full bg-gray-200 text-gray-700 border \
                        border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none \
                        focus:bg-white",)
@@ -69,6 +97,20 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
                     "Add result"
                 }
             }
+            div (class = "flex flex-wrap") {
+                input (bind:value = state.new_user,
+                       class = "appearance-none block w-full bg-gray-200 text-gray-700 border \
+                       border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none \
+                       focus:bg-white",)
+            }
+            div (class = "flex flex-wrap") {
+                button(on:click = handle_add_user,
+                       class = "flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 \
+                       hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded",
+                ) {
+                    "Add new user"
+                }
+            }
         }
     }
 }
@@ -79,7 +121,8 @@ async fn get_request_state(
     _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
     Ok(PageState {
-        name: "Ferris".to_string(),
+        winner: "Ferris".to_string(),
+        new_user: "newguy".to_string(),
     })
 }
 

@@ -33,6 +33,11 @@ pub struct PoolMatchList {
     pub max_id: MatchId,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UserList{
+    pub users: Vec<String>,
+}
+
 impl PoolMatch {
     pub fn new(data: MatchData, time: DateTime<Utc>) -> PoolMatch {
         PoolMatch { id: 0, data, time }
@@ -51,5 +56,19 @@ impl PoolMatchList {
         pool_match.id = self.max_id + 1;
         self.max_id += 1;
         self.pool_matches.push(pool_match);
+    }
+}
+
+impl UserList {
+    pub fn new() -> UserList {
+        UserList {
+            users: vec![],
+        }
+    }
+
+    pub fn add_user(&mut self, user: String) -> usize {
+        let user_id = self.users.len();
+        self.users.push(user);
+        user_id
     }
 }

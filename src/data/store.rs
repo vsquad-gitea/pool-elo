@@ -1,6 +1,7 @@
 // (Server only) In-memory data storage and persistent storage
 
 use crate::data::pool_match::PoolMatchList;
+use crate::data::pool_match::UserList;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path, sync::Mutex};
@@ -8,6 +9,7 @@ use std::{fs, path::Path, sync::Mutex};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Store {
     pub matches: PoolMatchList,
+    pub users: UserList,
 }
 
 impl Store {
@@ -16,6 +18,7 @@ impl Store {
         match Path::new("data/store.json").exists() {
             false => Store {
                 matches: PoolMatchList::new(),
+                users: UserList::new(),
             },
             true => {
                 let contents = fs::read_to_string("data/store.json").unwrap();
