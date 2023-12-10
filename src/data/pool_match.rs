@@ -6,19 +6,17 @@ use serde::{Deserialize, Serialize};
 pub type MatchId = u32;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum MatchData {
-    Standard8Ball {
-        winner: PlayerId,
-        loser: PlayerId,
-    },
-    Standard9Ball {
-        winner: PlayerId,
-        loser: PlayerId,
-    },
-    CutThroat {
-        winner: PlayerId,
-        losers: [PlayerId; 2],
-    },
+pub enum MatchType {
+    Standard8Ball,
+    Standard9Ball,
+    CutThroat,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct MatchData {
+    pub type_: MatchType,
+    pub winners: Vec<PlayerId>,
+    pub losers: Vec<PlayerId>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -28,6 +26,7 @@ pub struct PoolMatch {
     #[serde(with = "ts_seconds")]
     pub time: DateTime<Utc>,
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PoolMatchList {
     pub pool_matches: Vec<PoolMatch>,
