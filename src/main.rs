@@ -18,6 +18,8 @@ cfg_if::cfg_if! {
             stores::MutableStore,
             turbine::Turbine,
         };
+        use futures::executor::block_on;
+        use sea_orm::{Database};
         use crate::server::routes::register_routes;
     }
 }
@@ -34,6 +36,13 @@ pub async fn dflt_server<M: MutableStore + 'static, T: TranslationsManager + 'st
     let mut app = perseus_axum::get_router(turbine, opts).await;
 
     app = register_routes(app);
+
+    // TODO -> Update to use environment variable
+    if let Err(err) = block_on(Database::connect(
+        "postgres://elo:elo@localhost:5432/elo_app",
+    )) {
+        panic!("{}", err);
+    }
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

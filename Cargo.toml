@@ -18,7 +18,9 @@ log = "0.4.20"
 once_cell = "1.18.0"
 web-sys = "0.3.64"
 cfg-if = "1.0.0"
-chrono = { version = "0.4.31", features = ["serde"] }
+chrono = { version = "0.4.38", features = ["serde", "wasm-bindgen"] }
+axum-login = "0.15.3"
+password-auth = "1.0.0"
 
 [target.'cfg(engine)'.dev-dependencies]
 fantoccini = "0.19"
@@ -28,6 +30,13 @@ tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 perseus-axum = { version = "0.4.2" }
 axum = "0.6"
 tower-http = { version = "0.3", features = ["fs"] }
+futures = "0.3.28"
+sea-orm = { version = "0.12.0", features = [
+    "sqlx-postgres",
+    "runtime-tokio-native-tls",
+    "macros",
+    "with-chrono",
+] }
 
 [target.'cfg(client)'.dependencies]
 wasm-bindgen = "0.2"
