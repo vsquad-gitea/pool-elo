@@ -14,6 +14,8 @@ Run `curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh`
 ### Windows:
 
 https://nodejs.org/en
+(todo look into:)
+https://pnpm.io/
 
 ### Unix based systems:
 
@@ -23,6 +25,9 @@ https://nodejs.org/en
 ## 3. Install Perseus, for real-time updates while developing
 
 `cargo install perseus-cli`
+
+(temporarily broken, if this doensn't work run `cargo install perseus-cli --locked` )
+
 `rustup target add wasm32-unknown-unknown`
 
 ## 4. Install docker for Postgresql
@@ -56,6 +61,8 @@ To build CSS run:
 
 To build the project for testing, run
 `perseus serve --verbose`
+(if broken: todo remove once fixed)
+`perseus --wasm-opt-version version_118 serve --verbose`
 
 # Deploying the project
 
