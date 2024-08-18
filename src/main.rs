@@ -1,5 +1,6 @@
 mod components;
 mod endpoints;
+#[allow(unused_imports)]
 mod entity;
 mod error_views;
 #[cfg(engine)]

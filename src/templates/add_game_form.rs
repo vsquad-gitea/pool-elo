@@ -40,7 +40,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
     };
 
     view! { cx,
-        Layout(title = "Add Game Results") {
+        Layout(_title = "Add Game Results") {
             div (class = "flex flex-wrap") {
                 select {
                     option (value="red")

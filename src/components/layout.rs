@@ -2,14 +2,17 @@ use sycamore::prelude::*;
 
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {
-    pub title: &'a str,
+    pub _title: &'a str,
     pub children: Children<'a, G>,
 }
 
 #[component]
 pub fn Layout<'a, G: Html>(
     cx: Scope<'a>,
-    LayoutProps { title: _, children }: LayoutProps<'a, G>,
+    LayoutProps {
+        _title: _,
+        children,
+    }: LayoutProps<'a, G>,
 ) -> View<G> {
     let children = children.call(cx);
 

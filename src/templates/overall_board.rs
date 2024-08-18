@@ -9,10 +9,10 @@ use sycamore::prelude::*;
 struct PageState {}
 
 fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageStateRx) -> View<G> {
-    let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+    let _global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     view! { cx,
-        Layout(title = "Overall Leaderboard") {
+        Layout(_title = "Overall Leaderboard") {
             ul {
                 (View::new_fragment(
                     vec![],
