@@ -12,83 +12,84 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let schema = Schema::new(DbBackend::Postgres);
 
-        manager
-            .create_type(schema.create_enum_from_active_enum::<PlayerSetupType>())
-            .await?;
+        // Game type enum
         manager
             .create_type(schema.create_enum_from_active_enum::<GameType>())
             .await?;
+        // Game table
         manager
             .create_table(
                 Table::create()
                     .table(Game::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(Game::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(Game::PlayerSetupType).custom(PlayerSetupType::name()))
-                    .col(ColumnDef::new(Game::GameType).custom(GameType::name()))
-                    .col(
-                        ColumnDef::new(Game::Time)
-                            .timestamp_with_time_zone()
-                            .not_null(),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-        manager
-            .create_table(
-                Table::create()
-                    .table(Game::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(Game::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(Game::PlayerSetupType).custom(PlayerSetupType::name()))
+                    .col(pk_auto(Game::Id))
+                    .col(timestamp_with_time_zone(Game::Time))
                     .col(ColumnDef::new(Game::GameType).custom(GameType::name()))
                     .to_owned(),
             )
             .await?;
+        // TeamResult table
         manager
             .create_table(
                 Table::create()
-                    .table(OneVsOne::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(OneVsOne::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(OneVsOne::PlayerOne).integer().not_null())
-                    .col(ColumnDef::new(OneVsOne::PlayerTwo).integer().not_null())
-                    .col(ColumnDef::new(OneVsOne::GameId).integer().not_null())
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-user-one_vs_one-player_one_id")
-                            .from(OneVsOne::Table, OneVsOne::PlayerOne)
-                            .to(User::Table, User::Id),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-user-one_vs_one-player_two_id")
-                            .from(OneVsOne::Table, OneVsOne::PlayerTwo)
-                            .to(User::Table, User::Id),
+                    .table(TeamResult::Table)
+                    .col(pk_auto(TeamResult::Id))
+                    .col(integer(TeamResult::Place))
+                    .col(integer_null(TeamResult::Score))
+                    .to_owned(),
+            )
+            .await?;
+        // Game to TeamResult assoc
+        manager
+            .create_table(
+                Table::create()
+                    .table(GameToTeamResult::Table)
+                    .col(integer(GameToTeamResult::GameId))
+                    .col(integer(GameToTeamResult::TeamResultId))
+                    .primary_key(
+                        Index::create()
+                            .name("pk-game_to_team_result")
+                            .col(GameToTeamResult::GameId)
+                            .col(GameToTeamResult::TeamResultId),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-game-one_vs_one-game_id")
-                            .from(OneVsOne::Table, OneVsOne::GameId)
+                            .name("fk-game_to_team_result-game_id")
+                            .from(GameToTeamResult::Table, GameToTeamResult::GameId)
                             .to(Game::Table, Game::Id),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-game_to_team_result-team_result_id")
+                            .from(GameToTeamResult::Table, GameToTeamResult::TeamResultId)
+                            .to(TeamResult::Table, TeamResult::Id),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+        // TeamResult to User assoc
+        manager
+            .create_table(
+                Table::create()
+                    .table(TeamResultToUser::Table)
+                    .col(integer(TeamResultToUser::TeamResultId))
+                    .col(integer(TeamResultToUser::UserId))
+                    .primary_key(
+                        Index::create()
+                            .name("pk-team_result_to_user")
+                            .col(TeamResultToUser::TeamResultId)
+                            .col(TeamResultToUser::UserId),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-team_result_to_user-team_result_id")
+                            .from(TeamResultToUser::Table, TeamResultToUser::TeamResultId)
+                            .to(TeamResult::Table, TeamResult::Id),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-team_result_to_user-user_id")
+                            .from(TeamResultToUser::Table, TeamResultToUser::UserId)
+                            .to(User::Table, User::Id),
                     )
                     .to_owned(),
             )
@@ -96,30 +97,27 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // Drop tables in reverse
         manager
-            .drop_type(Type::drop().name(PlayerSetupType::name()).to_owned())
+            .drop_table(Table::drop().table(TeamResultToUser::Table).to_owned())
             .await?;
         manager
-            .drop_type(Type::drop().name(GameType::name()).to_owned())
+            .drop_table(Table::drop().table(GameToTeamResult::Table).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(TeamResult::Table).to_owned())
             .await?;
         manager
             .drop_table(Table::drop().table(Game::Table).to_owned())
             .await?;
+        // Drop types
         manager
-            .drop_table(Table::drop().table(OneVsOne::Table).to_owned())
+            .drop_type(Type::drop().name(GameType::name()).to_owned())
             .await
     }
 }
 
 // Enums
-#[derive(EnumIter, DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "player_setup_type")]
-enum PlayerSetupType {
-    #[sea_orm(string_value = "OneVsOne")]
-    OneVsOne,
-    #[sea_orm(string_value = "TwoVsTwo")]
-    TwoVsTwo,
-}
 
 #[derive(EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "game_type")]
@@ -138,15 +136,28 @@ enum Game {
     Table,
     Id,
     Time,
-    PlayerSetupType,
     GameType,
 }
 
 #[derive(DeriveIden)]
-enum OneVsOne {
+enum TeamResult {
     Table,
     Id,
+    Place,
+    Score,
+}
+
+// Assoc
+#[derive(DeriveIden)]
+enum GameToTeamResult {
+    Table,
     GameId,
-    PlayerOne,
-    PlayerTwo,
+    TeamResultId,
+}
+
+#[derive(DeriveIden)]
+enum TeamResultToUser {
+    Table,
+    TeamResultId,
+    UserId,
 }

@@ -4,13 +4,12 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "one_vs_one")]
+#[sea_orm(table_name = "game_to_team_result")]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
-    pub player_one: i32,
-    pub player_two: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub game_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub team_result_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -24,26 +23,24 @@ pub enum Relation {
     )]
     Game,
     #[sea_orm(
-        belongs_to = "super::user::Entity",
-        from = "Column::PlayerOne",
-        to = "super::user::Column::Id",
+        belongs_to = "super::team_result::Entity",
+        from = "Column::TeamResultId",
+        to = "super::team_result::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    User2,
-    #[sea_orm(
-        belongs_to = "super::user::Entity",
-        from = "Column::PlayerTwo",
-        to = "super::user::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    User1,
+    TeamResult,
 }
 
 impl Related<super::game::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Game.def()
+    }
+}
+
+impl Related<super::team_result::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TeamResult.def()
     }
 }
 

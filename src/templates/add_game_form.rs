@@ -1,5 +1,4 @@
-use crate::data::pool_match::MatchType;
-use crate::{components::layout::Layout, data::pool_match::MatchData};
+use crate::components::layout::Layout;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -7,7 +6,6 @@ use web_sys::Event;
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
-        use crate::data::pool_match::{PoolMatch, PoolMatchList, UserList};
         use crate::templates::global_state::AppStateRx;
         use crate::endpoints::{MATCH, USER};
         use crate::templates::get_api_path;
@@ -29,28 +27,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
         #[cfg(client)]
         {
             // state.winner.get().as_ref().clone()
-            spawn_local_scoped(cx, async move {
-                let new_match = PoolMatch::new(
-                    MatchData {
-                        type_: MatchType::Standard8Ball,
-                        winners: vec![1],
-                        losers: vec![2, 3, 4],
-                    },
-                    Utc::now(),
-                );
-                let client = reqwest::Client::new();
-                let new_matches = client
-                    .post(get_api_path(MATCH).as_str())
-                    .json(&new_match)
-                    .send()
-                    .await
-                    .unwrap()
-                    .json::<PoolMatchList>()
-                    .await
-                    .unwrap();
-                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-                global_state.matches.set(new_matches);
-            })
+            spawn_local_scoped(cx, async move {})
         }
     };
 
@@ -58,20 +35,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
         #[cfg(client)]
         {
             // state.winner.get().as_ref().clone()
-            spawn_local_scoped(cx, async move {
-                let client = reqwest::Client::new();
-                let new_users = client
-                    .post(get_api_path(USER).as_str())
-                    .body(state.new_user.get().as_ref().clone())
-                    .send()
-                    .await
-                    .unwrap()
-                    .json::<UserList>()
-                    .await
-                    .unwrap();
-                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-                global_state.users.set(new_users);
-            })
+            spawn_local_scoped(cx, async move {})
         }
     };
 

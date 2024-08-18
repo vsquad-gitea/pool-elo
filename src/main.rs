@@ -1,6 +1,6 @@
 mod components;
-mod data;
 mod endpoints;
+mod entity;
 mod error_views;
 #[cfg(engine)]
 mod server;

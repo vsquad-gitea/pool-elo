@@ -3,6 +3,8 @@
 pub mod prelude;
 
 pub mod game;
-pub mod one_vs_one;
+pub mod game_to_team_result;
 pub mod sea_orm_active_enums;
+pub mod team_result;
+pub mod team_result_to_user;
 pub mod user;

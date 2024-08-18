@@ -54,7 +54,7 @@ To set up the database, run:
 `$env:DATABASE_URL = "postgres://elo:elo@localhost:5432/elo_app"; sea-orm-cli migrate up`
 
 Updating entities after updating database:
-`$env:DATABASE_URL = "postgres://elo:elo@localhost:5432/elo_app"; sea-orm-cli generate entity -o entity/src --with-serde both`
+`$env:DATABASE_URL = "postgres://elo:elo@localhost:5432/elo_app"; sea-orm-cli generate entity -o src/entity --with-serde both`
 
 To build CSS run:
 `npm run build`

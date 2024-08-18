@@ -13,11 +13,3 @@ pub enum GameType {
     #[sea_orm(string_value = "TableTennis")]
     TableTennis,
 }
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "player_setup_type")]
-pub enum PlayerSetupType {
-    #[sea_orm(string_value = "OneVsOne")]
-    OneVsOne,
-    #[sea_orm(string_value = "TwoVsTwo")]
-    TwoVsTwo,
-}

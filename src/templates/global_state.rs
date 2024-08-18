@@ -1,8 +1,5 @@
 // Not a page, global state that is shared between all pages
 
-use crate::data::pool_match::PoolMatchList;
-use crate::data::pool_match::UserList;
-
 use perseus::{prelude::*, state::GlobalStateCreator};
 use serde::{Deserialize, Serialize};
 
@@ -10,16 +7,12 @@ cfg_if::cfg_if! {
     if #[cfg(engine)] {
         use std::thread;
         use std::ops::Deref;
-        use crate::data::store::DATA;
     }
 }
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "AppStateRx")]
-pub struct AppState {
-    pub matches: PoolMatchList,
-    pub users: UserList,
-}
+pub struct AppState {}
 
 pub fn get_global_state_creator() -> GlobalStateCreator {
     GlobalStateCreator::new()
@@ -29,15 +22,7 @@ pub fn get_global_state_creator() -> GlobalStateCreator {
 
 #[engine_only_fn]
 fn get_state() -> AppState {
-    let matches = thread::spawn(move || DATA.lock().unwrap().deref().matches.clone())
-        .join()
-        .unwrap();
-
-    let users = thread::spawn(move || DATA.lock().unwrap().deref().users.clone())
-        .join()
-        .unwrap();
-
-    AppState { matches, users }
+    AppState {}
 }
 
 #[engine_only_fn]
