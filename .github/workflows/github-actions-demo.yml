@@ -42,5 +42,10 @@ jobs:
         run: npm install -D tailwindcss
       - name: Compile css
         run: npm run build
+        # TODO -> Remove wasm-opt-version once perseus is updated
       - name: Build the project
-        run: perseus deploy
+        run: perseus --wasm-opt-version version_118 deploy
+      - name: Run clippy for server
+        run: RUSTFLAGS="--cfg=engine" cargo clippy -all
+      - name: Run clippy for frontend
+        run: RUSTFLAGS="--cfg=client" cargo clippy --all
