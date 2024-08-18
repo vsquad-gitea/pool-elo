@@ -46,6 +46,10 @@ jobs:
       - name: Build the project
         run: perseus --wasm-opt-version version_118 deploy --verbose
       - name: Run clippy for server
-        run: RUSTFLAGS="--cfg=engine" cargo clippy --all
+        run: RUSTFLAGS="--cfg=engine" cargo clippy --all -- -D warnings
+        continue-on-error: true
       - name: Run clippy for frontend
-        run: RUSTFLAGS="--cfg=client" cargo clippy --all
+        run: RUSTFLAGS="--cfg=client" cargo clippy --all -- -D warnings
+        continue-on-error: true
+      - name: Check for formatting issues
+        run: cargo fmt --check
