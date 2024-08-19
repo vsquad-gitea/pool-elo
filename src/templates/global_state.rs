@@ -11,25 +11,54 @@ cfg_if::cfg_if! {
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "AppStateRx")]
-pub struct AppState {}
-
-pub fn get_global_state_creator() -> GlobalStateCreator {
-    GlobalStateCreator::new()
-        .build_state_fn(get_build_state)
-        .request_state_fn(get_request_state)
+pub struct AppState {
+    #[rx(nested)]
+    pub auth: AuthData,
 }
 
-#[engine_only_fn]
-fn get_state() -> AppState {
-    AppState {}
+#[derive(Serialize, Deserialize, Clone)]
+pub enum LoginState {
+    Authenticated,
+    NotAuthenticated,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "AuthDataRx")]
+pub struct AuthData {
+    pub state: LoginState,
+    pub username: Option<String>,
+    pub claims: Claims,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "ClaimsRx")]
+pub struct Claims {}
+
+pub fn get_global_state_creator() -> GlobalStateCreator {
+    GlobalStateCreator::new().build_state_fn(get_build_state)
 }
 
 #[engine_only_fn]
 pub async fn get_build_state() -> AppState {
-    get_state()
+    AppState {
+        auth: AuthData {
+            state: LoginState::Unknown,
+            username: None,
+            claims: Claims {},
+        },
+    }
 }
 
-#[engine_only_fn]
-pub async fn get_request_state(_req: Request) -> AppState {
-    get_state()
+// Client only code to check if they're authenticated
+#[cfg(client)]
+impl AuthDataRx {
+    pub fn detect_state(&self) {
+        // If the user is in a known state, return
+        if let LoginState::Authenticated | LoginState::NotAuthenticated = *self.state.get() {
+            return;
+        }
+        // TODO -> Get state from storage
+        self.state.set(LoginState::NotAuthenticated);
+    }
 }
