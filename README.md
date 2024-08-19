@@ -34,7 +34,7 @@ https://pnpm.io/
 
 ## 5. Install SeaORM for database
 
-`cargo install sea-orm-cli`
+`cargo install sea-orm-cli@1.0.0-rc.5`
 
 ## 5. Install tailwindcss, for styling
 
