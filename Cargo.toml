@@ -21,6 +21,7 @@ cfg-if = "1.0.0"
 chrono = { version = "0.4.38", features = ["serde", "wasm-bindgen"] }
 axum-login = "0.15.3"
 password-auth = "1.0.0"
+lazy_static = "1.5"
 
 [target.'cfg(engine)'.dev-dependencies]
 fantoccini = "0.19"

@@ -1,3 +1,4 @@
+mod capsules;
 mod components;
 mod endpoints;
 #[allow(unused_imports)]
@@ -61,6 +62,7 @@ pub fn main<G: Html>() -> PerseusApp<G> {
         .template(crate::templates::add_game_form::get_template())
         .template(crate::templates::one_v_one_board::get_template())
         .template(crate::templates::overall_board::get_template())
+        .capsule_ref(&*crate::capsules::login_form::LOGIN_FORM)
         .error_views(crate::error_views::get_error_views())
         .index_view(|cx| {
             view! { cx,
