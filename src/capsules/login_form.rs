@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::state_enums::OpenState;
+use crate::{state_enums::OpenState, templates::global_state::AppStateRx};
 
 lazy_static! {
     pub static ref LOGIN_FORM: Capsule<PerseusNodeType, LoginFormProps> = get_capsule();
@@ -19,7 +19,6 @@ struct LoginFormState {
 
 #[derive(Clone)]
 pub struct LoginFormProps {
-    pub open_state: RcSignal<OpenState>,
     pub remember_me: bool,
     pub endpoint: String,
     pub lost_password_url: Option<String>,
@@ -35,17 +34,16 @@ fn login_form_capsule<G: Html>(
     let close_modal = move |_event: Event| {
         #[cfg(client)]
         {
-            let open_state = props.open_state.clone();
             spawn_local_scoped(cx, async move {
-                open_state.set(OpenState::Closed);
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                global_state.modals_open.login.set(OpenState::Closed)
             });
         }
     };
 
-    view! {
-        cx,
+    view! { cx,
         div (class="overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center"){
-            div (class="relative w-full max-w-md px-4 h-full md:h-auto") {
+            div (class="relative md:mx-auto w-full md:w-1/2 lg:w-1/3 z-0 my-10") {
                 div (class="bg-white rounded-lg shadow relative dark:bg-gray-700"){
                     div (class="flex justify-end p-2"){
                         button (on:click = close_modal, class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){

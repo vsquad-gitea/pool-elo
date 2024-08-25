@@ -3,7 +3,7 @@
 use perseus::{prelude::*, state::GlobalStateCreator};
 use serde::{Deserialize, Serialize};
 
-use crate::state_enums::LoginState;
+use crate::state_enums::{LoginState, OpenState};
 
 cfg_if::cfg_if! {
     if #[cfg(engine)] {
@@ -16,6 +16,8 @@ cfg_if::cfg_if! {
 pub struct AppState {
     #[rx(nested)]
     pub auth: AuthData,
+    #[rx(nested)]
+    pub modals_open: ModalOpenData,
 }
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
@@ -24,6 +26,12 @@ pub struct AuthData {
     pub state: LoginState,
     pub username: Option<String>,
     pub claims: Claims,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "ModalOpenDataRx")]
+pub struct ModalOpenData {
+    pub login: OpenState,
 }
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
@@ -41,6 +49,9 @@ pub async fn get_build_state() -> AppState {
             state: LoginState::Unknown,
             username: None,
             claims: Claims {},
+        },
+        modals_open: ModalOpenData {
+            login: OpenState::Closed,
         },
     }
 }

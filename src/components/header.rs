@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use perseus::prelude::*;
 use sycamore::prelude::*;
 use web_sys::Event;
@@ -18,18 +20,14 @@ pub struct HeaderProps<'a> {
 pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderProps<'a>) -> View<G> {
     // Get global state to get authentication info
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-    // Create signal for opening/closing the login modal
-    let login_modal_state = create_rc_signal(OpenState::Closed);
 
-    let handle_log_in = {
-        let login_modal_state = login_modal_state.clone();
-        move |_event: Event| {
-            #[cfg(client)]
-            {
-                spawn_local_scoped(cx, async move {
-                    login_modal_state.set(OpenState::Open);
-                });
-            }
+    let handle_log_in = move |_event: Event| {
+        #[cfg(client)]
+        {
+            spawn_local_scoped(cx, async move {
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                global_state.modals_open.login.set(OpenState::Open);
+            });
         }
     };
 
@@ -76,28 +74,24 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
             }
         }
 
-        section {
-            div(class = "flex-1 py-2") {(
-                match *login_modal_state.get() {
-                    OpenState::Open => {
-                        let login_modal_state = login_modal_state.clone();
-                        view! { cx,
-                            (LOGIN_FORM.widget(cx, "",
-                                LoginFormProps{
-                                    open_state: login_modal_state.clone(),
-                                    remember_me: true,
-                                    endpoint: "".to_string(),
-                                    lost_password_url: Some("".to_string()),
-                                    forgot_password_url: Some("".to_string()),
-                                }
-                            ))
-                        }
+        section(class = "flex-2") {
+            (match *global_state.modals_open.login.get() {
+                OpenState::Open => {
+                    view! { cx,
+                        (LOGIN_FORM.widget(cx, "",
+                            LoginFormProps{
+                                remember_me: true,
+                                endpoint: "".to_string(),
+                                lost_password_url: Some("".to_string()),
+                                forgot_password_url: Some("".to_string()),
+                            }
+                        ))
                     }
-                    OpenState::Closed => {
-                        view!{ cx, }
-                    }
-                })
-            }
+                }
+                OpenState::Closed => {
+                    view!{ cx, }
+                }
+            })
         }
     }
 }
