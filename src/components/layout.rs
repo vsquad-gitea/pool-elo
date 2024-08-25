@@ -1,6 +1,8 @@
 use crate::{
     capsules::login_form::{LoginFormProps, LOGIN_FORM},
-    templates::global_state::{AppStateRx, LoginState},
+    components::header::{Header, HeaderProps},
+    state_enums::{GameState, LoginState},
+    templates::global_state::AppStateRx,
 };
 use perseus::prelude::*;
 use sycamore::prelude::*;
@@ -8,7 +10,8 @@ use web_sys::Event;
 
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {
-    pub _title: &'a str,
+    pub game: GameState,
+    pub title: &'a str,
     pub children: Children<'a, G>,
 }
 
@@ -18,86 +21,26 @@ pub struct LayoutProps<'a, G: Html> {
 pub fn Layout<'a, G: Html>(
     cx: Scope<'a>,
     LayoutProps {
-        _title: _,
+        game,
+        title,
         children,
     }: LayoutProps<'a, G>,
 ) -> View<G> {
     let children = children.call(cx);
+
     // Get global state to get authentication info
+    #[cfg(client)]
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     // Check if the client is authenticated or not
     #[cfg(client)]
     global_state.auth.detect_state();
 
-    // TODO -> move into function
-    let handle_log_in = move |_event: Event| {
-        #[cfg(client)]
-        {
-            spawn_local_scoped(cx, async move {
-                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-                global_state.auth.state.set(LoginState::Authenticated);
-            });
-        }
-    };
-
     view! { cx,
-        // Main page header
-        header {
-            div (class = "flex items-center justify-between w-full md:text-center h-20") {
-                div(class = "flex-1") {}
-                div(class = "text-gray-700 text-2xl font-semibold py-2") {
-                    "Pool Elo - Season 1"
-                }
-
-                div(class = "flex-1 py-2") {(
-                    match *global_state.auth.state.get() {
-                        LoginState::NotAuthenticated => {
-                            view! { cx,
-                                button(class = "text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700") {
-                                    "Register"
-                                }
-                                button(on:click = handle_log_in,class = "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800") {
-                                    "Login"
-                                }
-                            }
-                        }
-                        LoginState::Authenticated => {
-                            view! { cx,
-                                div {
-                                    "Hello {username}!"
-                                }
-                            }
-                        }
-                        // Will only appear for a few seconds
-                        LoginState::Unknown => {
-                            view! { cx,
-                                div (class = "px-5 py-2.5 me-2 mb-2"){
-                                    "Loading..."
-                                }
-                            }
-                        },
-                    })
-                }
-            }
-        }
+        // Main page header, including login functionality
+        Header(game = game, title = title)
 
         main(style = "my-8") {
-
-            (
-                match *global_state.auth.state.get() {
-                    LoginState::Authenticated => { view! { cx,
-                        (LOGIN_FORM.widget(cx, "",
-                            LoginFormProps{
-                                remember_me: true,
-                                endpoint: "".to_string(),
-                                lost_password_url: Some("".to_string()),
-                                forgot_password_url: Some("".to_string())
-                            })
-                        )
-                    }},
-                    _ => { view! { cx, div {} } }})
-
             // Body header
             div {
                 div (class = "container mx-auto px-6 py-3") {

@@ -1,4 +1,6 @@
-use crate::{components::layout::Layout, templates::global_state::AppStateRx};
+use crate::{
+    components::layout::Layout, state_enums::GameState, templates::global_state::AppStateRx,
+};
 
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -12,7 +14,7 @@ fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageSta
     let _global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     view! { cx,
-        Layout(_title = "Overall Leaderboard") {
+        Layout(title = "Overall Leaderboard", game = GameState::Pool) {
             ul {
                 (View::new_fragment(
                     vec![],

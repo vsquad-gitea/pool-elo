@@ -1,4 +1,4 @@
-use crate::components::layout::Layout;
+use crate::{components::layout::Layout, state_enums::GameState};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -9,7 +9,7 @@ struct PageState {}
 
 fn one_v_one_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageStateRx) -> View<G> {
     view! { cx,
-        Layout(_title = "1v1 Leaderboard") {
+        Layout(title = "1v1 Leaderboard", game = GameState::Pool) {
             p { "leaderboard" }
         }
     }

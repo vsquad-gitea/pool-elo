@@ -2,9 +2,28 @@ use lazy_static::lazy_static;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
+use web_sys::Event;
+
+use crate::state_enums::OpenState;
 
 lazy_static! {
     pub static ref LOGIN_FORM: Capsule<PerseusNodeType, LoginFormProps> = get_capsule();
+}
+
+#[derive(Serialize, Deserialize, Clone, ReactiveState)]
+#[rx(alias = "LoginFormStateRx")]
+struct LoginFormState {
+    username: String,
+    password: String,
+}
+
+#[derive(Clone)]
+pub struct LoginFormProps {
+    pub open_state: RcSignal<OpenState>,
+    pub remember_me: bool,
+    pub endpoint: String,
+    pub lost_password_url: Option<String>,
+    pub forgot_password_url: Option<String>,
 }
 
 #[auto_scope]
@@ -13,13 +32,23 @@ fn login_form_capsule<G: Html>(
     state: &LoginFormStateRx,
     props: LoginFormProps,
 ) -> View<G> {
+    let close_modal = move |_event: Event| {
+        #[cfg(client)]
+        {
+            let open_state = props.open_state.clone();
+            spawn_local_scoped(cx, async move {
+                open_state.set(OpenState::Closed);
+            });
+        }
+    };
+
     view! {
         cx,
         div (class="overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center"){
             div (class="relative w-full max-w-md px-4 h-full md:h-auto") {
                 div (class="bg-white rounded-lg shadow relative dark:bg-gray-700"){
                     div (class="flex justify-end p-2"){
-                        button (class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){
+                        button (on:click = close_modal, class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){
                             "Back"
                         }
                     }
@@ -53,21 +82,6 @@ fn login_form_capsule<G: Html>(
             }
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, ReactiveState)]
-#[rx(alias = "LoginFormStateRx")]
-struct LoginFormState {
-    username: String,
-    password: String,
-}
-
-#[derive(Clone)]
-pub struct LoginFormProps {
-    pub remember_me: bool,
-    pub endpoint: String,
-    pub lost_password_url: Option<String>,
-    pub forgot_password_url: Option<String>,
 }
 
 pub fn get_capsule<G: Html>() -> Capsule<G, LoginFormProps> {

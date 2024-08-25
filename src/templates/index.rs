@@ -1,10 +1,10 @@
-use crate::components::layout::Layout;
+use crate::{components::layout::Layout, state_enums::GameState};
 use perseus::prelude::*;
 use sycamore::prelude::*;
 
 fn index_page<G: Html>(cx: Scope) -> View<G> {
     view! { cx,
-        Layout(_title = "Index") {
+        Layout(title = "Index", game = GameState::Pool) {
             // Anything we put in here will be rendered inside the `<main>` block of the layout
             p { "Hello World!" }
             br {}

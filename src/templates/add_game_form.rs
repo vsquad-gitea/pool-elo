@@ -1,4 +1,4 @@
-use crate::components::layout::Layout;
+use crate::{components::layout::Layout, state_enums::GameState};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -40,7 +40,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
     };
 
     view! { cx,
-        Layout(_title = "Add Game Results") {
+        Layout(title = "Add Game Results", game = GameState::Pool) {
             div (class = "flex flex-wrap") {
                 select {
                     option (value="red")

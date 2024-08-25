@@ -6,6 +6,7 @@ mod entity;
 mod error_views;
 #[cfg(engine)]
 mod server;
+mod state_enums;
 mod templates;
 
 use perseus::prelude::*;

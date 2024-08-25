@@ -3,6 +3,8 @@
 use perseus::{prelude::*, state::GlobalStateCreator};
 use serde::{Deserialize, Serialize};
 
+use crate::state_enums::LoginState;
+
 cfg_if::cfg_if! {
     if #[cfg(engine)] {
 
@@ -14,13 +16,6 @@ cfg_if::cfg_if! {
 pub struct AppState {
     #[rx(nested)]
     pub auth: AuthData,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub enum LoginState {
-    Authenticated,
-    NotAuthenticated,
-    Unknown,
 }
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
