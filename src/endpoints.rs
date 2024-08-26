@@ -1,2 +1,2 @@
-pub const MATCH: &str = "/api/post-match";
-pub const USER: &str = "/api/post-user";
+pub const LOGIN: &str = "/api/login";
+pub const LOGIN_TEST: &str = "/api/login-test";

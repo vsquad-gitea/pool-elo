@@ -7,7 +7,6 @@ use web_sys::Event;
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::templates::global_state::AppStateRx;
-        use crate::endpoints::{MATCH, USER};
         use crate::templates::get_api_path;
         use chrono::Utc;
     }
@@ -85,8 +84,8 @@ async fn get_request_state(
     _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
     Ok(PageState {
-        winner: "Ferris".to_string(),
-        new_user: "newguy".to_string(),
+        winner: "Ferris".to_owned(),
+        new_user: "newguy".to_owned(),
     })
 }
 

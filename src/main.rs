@@ -4,6 +4,7 @@ mod endpoints;
 #[allow(unused_imports)]
 mod entity;
 mod error_views;
+mod models;
 #[cfg(engine)]
 mod server;
 mod state_enums;

@@ -1,10 +1,25 @@
+use std::num::NonZeroU16;
+
 use lazy_static::lazy_static;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::{state_enums::OpenState, templates::global_state::AppStateRx};
+use crate::{
+    endpoints::LOGIN,
+    state_enums::OpenState,
+    templates::{get_api_path, global_state::AppStateRx},
+};
+
+cfg_if::cfg_if! {
+    if #[cfg(client)] {
+        use crate::{
+            models::auth::{LoginInfo, LoginResponse},
+        };
+        use reqwest::StatusCode;
+    }
+}
 
 lazy_static! {
     pub static ref LOGIN_FORM: Capsule<PerseusNodeType, LoginFormProps> = get_capsule();
@@ -15,6 +30,7 @@ lazy_static! {
 struct LoginFormState {
     username: String,
     password: String,
+    remember_me: bool,
 }
 
 #[derive(Clone)]
@@ -41,6 +57,38 @@ fn login_form_capsule<G: Html>(
         }
     };
 
+    let handle_log_in = move |_event: Event| {
+        #[cfg(client)]
+        {
+            spawn_local_scoped(cx, async move {
+                let login_info = LoginInfo {
+                    username: state.username.get().as_ref().clone(),
+                    password: state.password.get().as_ref().clone(),
+                    remember_me: state.remember_me.get().as_ref().clone(),
+                };
+
+                // // @todo clean up error handling
+                let client = reqwest::Client::new();
+                let response = client
+                    .post(get_api_path(LOGIN).as_str())
+                    .json(&login_info)
+                    .send()
+                    .await
+                    .unwrap();
+
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+
+                if response.status() != StatusCode::OK {
+                    state.username.set(response.status().to_string());
+                    return;
+                }
+
+                let response = response.json::<LoginResponse>().await.unwrap();
+                state.username.set(response.token.clone());
+            });
+        }
+    };
+
     view! { cx,
         div (class="overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center"){
             div (class="relative md:mx-auto w-full md:w-1/2 lg:w-1/3 z-0 my-10") {
@@ -50,20 +98,20 @@ fn login_form_capsule<G: Html>(
                             "Back"
                         }
                     }
-                    form (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
+                    div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in to our platform"}
                         div {
-                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Your email"}
-                            input (class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
+                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
+                            input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
                         }
                         div {
-                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300"){"Your password"}
-                            input (class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"){}
+                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300"){"Password"}
+                            input (bind:value = state.password, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"){}
                         }
                         div (class="flex justify-between"){
                             div (class="flex items-start"){
                                 div (class="flex items-center h-5"){
-                                    input (class="bg-gray-50 border border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800") {}
+                                    input (bind:checked = state.remember_me, type = "checkbox", class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600") {}
                                 }
                                 div (class="text-sm ml-3"){
                                 label (class="font-medium text-gray-900 dark:text-gray-300"){"Remember me"}
@@ -71,7 +119,7 @@ fn login_form_capsule<G: Html>(
                             }
                             a (class="text-sm text-blue-700 hover:underline dark:text-blue-500"){"Lost Password?"}
                         }
-                        button (class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"){"Login to your account"}
+                        button (on:click = handle_log_in, class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"){"Log in"}
                         div (class="text-sm font-medium text-gray-500 dark:text-gray-300"){
                             a (class="text-blue-700 hover:underline dark:text-blue-500"){"Create account"}
                         }
@@ -92,7 +140,8 @@ pub fn get_capsule<G: Html>() -> Capsule<G, LoginFormProps> {
 #[engine_only_fn]
 async fn get_build_state(_info: StateGeneratorInfo<()>) -> LoginFormState {
     LoginFormState {
-        username: "".to_string(),
-        password: "".to_string(),
+        username: "".to_owned(),
+        password: "".to_owned(),
+        remember_me: false,
     }
 }

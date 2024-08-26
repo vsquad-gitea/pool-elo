@@ -3,7 +3,10 @@
 use perseus::{prelude::*, state::GlobalStateCreator};
 use serde::{Deserialize, Serialize};
 
-use crate::state_enums::{LoginState, OpenState};
+use crate::{
+    models::auth::Claims,
+    state_enums::{LoginState, OpenState},
+};
 
 cfg_if::cfg_if! {
     if #[cfg(engine)] {
@@ -34,10 +37,6 @@ pub struct ModalOpenData {
     pub login: OpenState,
 }
 
-#[derive(Serialize, Deserialize, ReactiveState, Clone)]
-#[rx(alias = "ClaimsRx")]
-pub struct Claims {}
-
 pub fn get_global_state_creator() -> GlobalStateCreator {
     GlobalStateCreator::new().build_state_fn(get_build_state)
 }
@@ -48,7 +47,10 @@ pub async fn get_build_state() -> AppState {
         auth: AuthData {
             state: LoginState::Unknown,
             username: None,
-            claims: Claims {},
+            claims: Claims {
+                sub: "".to_owned(),
+                exp: 0,
+            },
         },
         modals_open: ModalOpenData {
             login: OpenState::Closed,
