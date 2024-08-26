@@ -41,6 +41,14 @@ impl AuthDataRx {
             let value = serde_json::to_string(&auth_info).unwrap();
             storage.set_item("auth", &value).unwrap();
         }
+        // Save into session storage always
+        let storage: web_sys::Storage = web_sys::window()
+            .unwrap()
+            .session_storage()
+            .unwrap()
+            .unwrap();
+        let value = serde_json::to_string(&auth_info).unwrap();
+        storage.set_item("auth", &value).unwrap();
 
         // Save token to session storage
         self.username.set(Some(auth_info.username.clone()));
@@ -54,6 +62,12 @@ impl AuthDataRx {
         // TODO -> handle error if local storage is not readable in browser
         let storage: web_sys::Storage =
             web_sys::window().unwrap().local_storage().unwrap().unwrap();
+        storage.remove_item("auth").unwrap();
+        let storage: web_sys::Storage = web_sys::window()
+            .unwrap()
+            .session_storage()
+            .unwrap()
+            .unwrap();
         storage.remove_item("auth").unwrap();
         // Update state
         self.auth_info.set(None);
@@ -108,7 +122,22 @@ impl AuthDataRx {
                 self.handle_log_in(auth_info);
             }
             None => {
-                self.state.set(LoginState::NotAuthenticated);
+                // Try session storage
+                let storage: web_sys::Storage = web_sys::window()
+                    .unwrap()
+                    .session_storage()
+                    .unwrap()
+                    .unwrap();
+                let saved_auth = storage.get("auth").unwrap();
+                match saved_auth {
+                    Some(auth_info) => {
+                        let auth_info = serde_json::from_str(&auth_info).unwrap();
+                        self.handle_log_in(auth_info);
+                    }
+                    None => {
+                        self.state.set(LoginState::NotAuthenticated);
+                    }
+                }
             }
         }
     }

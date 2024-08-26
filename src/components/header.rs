@@ -97,9 +97,6 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
                         (LOGIN_FORM.widget(cx, "",
                             LoginFormProps{
                                 remember_me: true,
-                                endpoint: "".to_owned(),
-                                lost_password_url: Some("".to_owned()),
-                                forgot_password_url: Some("".to_owned()),
                             }
                         ))
                     }
