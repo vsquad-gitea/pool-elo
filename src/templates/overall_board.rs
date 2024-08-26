@@ -1,6 +1,4 @@
-use crate::{
-    components::layout::Layout, state_enums::GameState, templates::global_state::AppStateRx,
-};
+use crate::{components::layout::Layout, global_state::AppStateRx, state_enums::GameState};
 
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};

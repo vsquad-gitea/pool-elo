@@ -1,8 +1,8 @@
 use crate::{
     capsules::login_form::{LoginFormProps, LOGIN_FORM},
     components::header::{Header, HeaderProps},
+    global_state::AppStateRx,
     state_enums::{GameState, LoginState},
-    templates::global_state::AppStateRx,
 };
 use perseus::prelude::*;
 use sycamore::prelude::*;

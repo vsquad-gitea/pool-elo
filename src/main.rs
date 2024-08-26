@@ -4,6 +4,7 @@ mod endpoints;
 #[allow(unused_imports)]
 mod entity;
 mod error_views;
+mod global_state;
 mod models;
 #[cfg(engine)]
 mod server;
@@ -59,7 +60,7 @@ pub fn main<G: Html>() -> PerseusApp<G> {
     env_logger::init();
 
     PerseusApp::new()
-        .global_state_creator(crate::templates::global_state::get_global_state_creator())
+        .global_state_creator(crate::global_state::get_global_state_creator())
         .template(crate::templates::index::get_template())
         .template(crate::templates::add_game_form::get_template())
         .template(crate::templates::one_v_one_board::get_template())

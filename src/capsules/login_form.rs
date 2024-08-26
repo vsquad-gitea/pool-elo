@@ -1,4 +1,4 @@
-use std::num::NonZeroU16;
+use std::arch::global_asm;
 
 use lazy_static::lazy_static;
 use perseus::prelude::*;
@@ -6,16 +6,15 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::{
-    endpoints::LOGIN,
-    state_enums::OpenState,
-    templates::{get_api_path, global_state::AppStateRx},
-};
-
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::{
             models::auth::{LoginInfo, LoginResponse},
+            endpoints::LOGIN,
+            state_enums::{LoginState, OpenState},
+            templates::{get_api_path},
+            global_state::{self, AppStateRx},
+                models::auth::WebAuthInfo,
         };
         use reqwest::StatusCode;
     }
@@ -61,10 +60,12 @@ fn login_form_capsule<G: Html>(
         #[cfg(client)]
         {
             spawn_local_scoped(cx, async move {
+                let remember_me = state.remember_me.get().as_ref().clone();
+                let username = state.username.get().as_ref().clone();
                 let login_info = LoginInfo {
-                    username: state.username.get().as_ref().clone(),
+                    username: username.clone(),
                     password: state.password.get().as_ref().clone(),
-                    remember_me: state.remember_me.get().as_ref().clone(),
+                    remember_me,
                 };
 
                 // // @todo clean up error handling
@@ -79,12 +80,23 @@ fn login_form_capsule<G: Html>(
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
                 if response.status() != StatusCode::OK {
+                    // todo update to some type of alert
                     state.username.set(response.status().to_string());
                     return;
                 }
 
                 let response = response.json::<LoginResponse>().await.unwrap();
-                state.username.set(response.token.clone());
+
+                // Save token to session/local storage and update state
+                global_state.auth.handle_log_in(WebAuthInfo {
+                    token: response.token,
+                    expires: response.expires,
+                    username,
+                    remember_me,
+                });
+
+                // Close modal
+                global_state.modals_open.login.set(OpenState::Closed);
             });
         }
     };

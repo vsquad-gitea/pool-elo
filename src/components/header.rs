@@ -7,9 +7,9 @@ use web_sys::Event;
 use crate::{
     capsules::login_form::{LoginFormProps, LOGIN_FORM},
     endpoints::LOGIN,
+    global_state::AppStateRx,
     models::auth::LoginInfo,
     state_enums::{GameState, LoginState, OpenState},
-    templates::global_state::AppStateRx,
 };
 
 #[derive(Prop)]
@@ -33,6 +33,16 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
         }
     };
 
+    let handle_log_out = move |_event: Event| {
+        #[cfg(client)]
+        {
+            spawn_local_scoped(cx, async move {
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                global_state.auth.handle_log_out();
+            });
+        }
+    };
+
     view! { cx,
         header {
             div (class = "flex items-center justify-between w-full md:text-center h-20") {
@@ -52,14 +62,18 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
                                     "Register"
                                 }
                                 button(on:click = handle_log_in,class = "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800") {
-                                    "Login"
+                                    "Log in"
                                 }
                             }
                         }
                         LoginState::Authenticated => {
                             view! { cx,
                                 div {
-                                    "Hello {username}!"
+                                    "Hello "
+                                        (global_state.auth.username.get().as_ref().clone().unwrap_or("".to_owned()))
+                                }
+                                button(on:click = handle_log_out, class = "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800") {
+                                    "Log out"
                                 }
                             }
                         }

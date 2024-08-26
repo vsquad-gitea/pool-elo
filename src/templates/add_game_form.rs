@@ -6,7 +6,7 @@ use web_sys::Event;
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
-        use crate::templates::global_state::AppStateRx;
+        use crate::global_state::AppStateRx;
         use crate::templates::get_api_path;
         use chrono::Utc;
     }

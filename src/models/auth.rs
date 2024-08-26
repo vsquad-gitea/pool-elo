@@ -21,3 +21,13 @@ pub struct Claims {
     pub sub: String,
     pub exp: usize,
 }
+
+// For client local storage and session storage
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WebAuthInfo {
+    pub token: String,
+    #[serde(with = "ts_seconds")]
+    pub expires: DateTime<Utc>,
+    pub username: String,
+    pub remember_me: bool,
+}
