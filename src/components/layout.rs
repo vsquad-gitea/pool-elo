@@ -1,8 +1,11 @@
 use crate::{
-    capsules::login_form::{LoginFormProps, LOGIN_FORM},
+    capsules::{
+        forgot_password_form::{ForgotPasswordFormProps, FORGOT_PASSWORD_FORM},
+        login_form::{LoginFormProps, LOGIN_FORM},
+    },
     components::header::{Header, HeaderProps},
     global_state::AppStateRx,
-    state_enums::{GameState, LoginState},
+    state_enums::{GameState, LoginState, OpenState},
 };
 use perseus::prelude::*;
 use sycamore::prelude::*;
@@ -28,8 +31,6 @@ pub fn Layout<'a, G: Html>(
 ) -> View<G> {
     let children = children.call(cx);
 
-    // Get global state to get authentication info
-    #[cfg(client)]
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     // Check if the client is authenticated or not
@@ -39,6 +40,36 @@ pub fn Layout<'a, G: Html>(
     view! { cx,
         // Main page header, including login functionality
         Header(game = game, title = title)
+
+        // Modals
+        section(class = "flex-2") {
+            (match *global_state.modals_open.login.get() {
+                OpenState::Open => {
+                    view! { cx,
+                        (LOGIN_FORM.widget(cx, "",
+                            LoginFormProps{
+                                remember_me: true,
+                            }
+                        ))
+                    }
+                }
+                OpenState::Closed => {
+                    view!{ cx, }
+                }
+            })
+            (match *global_state.modals_open.forgot_password.get() {
+                OpenState::Open => {
+                    view! { cx,
+                        (FORGOT_PASSWORD_FORM.widget(cx, "",
+                            ForgotPasswordFormProps{}
+                        ))
+                    }
+                }
+                OpenState::Closed => {
+                    view!{ cx, }
+                }
+            })
+        }
 
         main(style = "my-8") {
             // Body header
@@ -59,7 +90,7 @@ pub fn Layout<'a, G: Html>(
                     }
                 }
             }
-            // Actual body
+            // Content body
             div(class = "container mx-auto px-6") {
                 div(class = "md:flex mt-8 md:-mx-4") {
                     div(class = "rounded-md overflow-hidden bg-cover bg-center") {

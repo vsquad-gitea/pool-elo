@@ -1,6 +1,9 @@
-use crate::models::auth::{Claims, LoginInfo, LoginResponse};
+use crate::{
+    models::auth::{Claims, LoginInfo, LoginResponse},
+    server::server_state::ServerState,
+};
 use axum::{
-    extract::Json,
+    extract::{Json, State},
     http::{HeaderMap, StatusCode},
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
@@ -10,6 +13,7 @@ pub fn is_valid_user(username: &str, password: &str) -> bool {
 }
 
 pub async fn post_login_user(
+    State(state): State<ServerState>,
     Json(login_info): Json<LoginInfo>,
 ) -> Result<Json<LoginResponse>, StatusCode> {
     let user_authenticated = is_valid_user(&login_info.username, &login_info.password);
@@ -42,7 +46,10 @@ pub async fn post_login_user(
     }
 }
 
-pub async fn post_test_login(header_map: HeaderMap) -> Result<Json<String>, StatusCode> {
+pub async fn post_test_login(
+    State(state): State<ServerState>,
+    header_map: HeaderMap,
+) -> Result<Json<String>, StatusCode> {
     if let Some(auth_header) = header_map.get("Authorization") {
         if let Ok(auth_header_str) = auth_header.to_str() {
             if auth_header_str.starts_with("Bearer ") {

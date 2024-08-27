@@ -31,3 +31,9 @@ pub struct WebAuthInfo {
     pub username: String,
     pub remember_me: bool,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ForgotPasswordRequest {
+    pub username: String,
+    pub contact_info: String,
+}

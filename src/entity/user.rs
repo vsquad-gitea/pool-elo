@@ -16,6 +16,7 @@ pub struct Model {
     pub is_admin: bool,
     pub email: Option<String>,
     pub avatar: Option<String>,
+    pub forgot_password_request: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

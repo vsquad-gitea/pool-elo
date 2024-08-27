@@ -81,6 +81,7 @@ impl AuthDataRx {
 #[rx(alias = "ModalOpenDataRx")]
 pub struct ModalOpenData {
     pub login: OpenState,
+    pub register: OpenState,
     pub forgot_password: OpenState,
 }
 
@@ -99,6 +100,7 @@ pub async fn get_build_state() -> AppState {
         },
         modals_open: ModalOpenData {
             login: OpenState::Closed,
+            register: OpenState::Closed,
             forgot_password: OpenState::Closed,
         },
     }

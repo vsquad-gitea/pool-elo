@@ -92,34 +92,5 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
                 }
             }
         }
-
-        section(class = "flex-2") {
-            (match *global_state.modals_open.login.get() {
-                OpenState::Open => {
-                    view! { cx,
-                        (LOGIN_FORM.widget(cx, "",
-                            LoginFormProps{
-                                remember_me: true,
-                            }
-                        ))
-                    }
-                }
-                OpenState::Closed => {
-                    view!{ cx, }
-                }
-            })
-            (match *global_state.modals_open.forgot_password.get() {
-                OpenState::Open => {
-                    view! { cx,
-                        (FORGOT_PASSWORD_FORM.widget(cx, "",
-                            ForgotPasswordFormProps{}
-                        ))
-                    }
-                }
-                OpenState::Closed => {
-                    view!{ cx, }
-                }
-            })
-        }
     }
 }

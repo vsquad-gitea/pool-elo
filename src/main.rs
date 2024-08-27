@@ -23,9 +23,10 @@ cfg_if::cfg_if! {
             stores::MutableStore,
             turbine::Turbine,
         };
+        use crate::server::routes::get_api_router;
+        use crate::server::server_state::ServerState;
         use futures::executor::block_on;
-        use sea_orm::{Database};
-        use crate::server::routes::register_routes;
+        use sea_orm::Database;
     }
 }
 
@@ -38,16 +39,24 @@ pub async fn dflt_server<M: MutableStore + 'static, T: TranslationsManager + 'st
     let addr: SocketAddr = format!("{}:{}", host, port)
         .parse()
         .expect("Invalid address provided to bind to.");
-    let mut app = perseus_axum::get_router(turbine, opts).await;
-
-    app = register_routes(app);
+    let app = perseus_axum::get_router(turbine, opts).await;
 
     // TODO -> Update to use environment variable
-    if let Err(err) = block_on(Database::connect(
-        "postgres://elo:elo@localhost:5432/elo_app",
-    )) {
-        panic!("{}", err);
-    }
+    // TODO -> error handling
+    // Includes making database connection
+    let db_conn = Database::connect("postgres://elo:elo@localhost:5432/elo_app");
+    let db_conn = block_on(db_conn);
+    let db_conn = match db_conn {
+        Ok(db_conn) => db_conn,
+        Err(err) => {
+            panic!("{}", err);
+        }
+    };
+    let state = ServerState { db_conn };
+
+    // Get server routes
+    let api_router = get_api_router(state);
+    let app = app.merge(api_router);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

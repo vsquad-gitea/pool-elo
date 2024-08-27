@@ -9,6 +9,7 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // User table
+        // @todo verify all data saved is length-checked
         manager
             .create_table(
                 Table::create()
@@ -22,6 +23,7 @@ impl MigrationTrait for Migration {
                     .col(boolean(User::IsAdmin))
                     .col(string_null(User::Email))
                     .col(string_null(User::Avatar))
+                    .col(string_null(User::ForgotPasswordRequest))
                     .to_owned(),
             )
             .await
@@ -46,4 +48,5 @@ pub enum User {
     IsAdmin,
     Email,
     Avatar,
+    ForgotPasswordRequest,
 }
