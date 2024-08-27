@@ -5,7 +5,10 @@ use sycamore::prelude::*;
 use web_sys::Event;
 
 use crate::{
-    capsules::login_form::{LoginFormProps, LOGIN_FORM},
+    capsules::{
+        forgot_password_form::{ForgotPasswordFormProps, FORGOT_PASSWORD_FORM},
+        login_form::{LoginFormProps, LOGIN_FORM},
+    },
     endpoints::LOGIN,
     global_state::AppStateRx,
     models::auth::LoginInfo,
@@ -98,6 +101,18 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
                             LoginFormProps{
                                 remember_me: true,
                             }
+                        ))
+                    }
+                }
+                OpenState::Closed => {
+                    view!{ cx, }
+                }
+            })
+            (match *global_state.modals_open.forgot_password.get() {
+                OpenState::Open => {
+                    view! { cx,
+                        (FORGOT_PASSWORD_FORM.widget(cx, "",
+                            ForgotPasswordFormProps{}
                         ))
                     }
                 }

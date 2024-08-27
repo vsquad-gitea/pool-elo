@@ -1,5 +1,3 @@
-use std::arch::global_asm;
-
 use lazy_static::lazy_static;
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -14,7 +12,7 @@ cfg_if::cfg_if! {
             state_enums::{LoginState, OpenState},
             templates::{get_api_path},
             global_state::{self, AppStateRx},
-                models::auth::WebAuthInfo,
+            models::auth::WebAuthInfo,
         };
         use reqwest::StatusCode;
     }
@@ -30,6 +28,15 @@ struct LoginFormState {
     username: String,
     password: String,
     remember_me: bool,
+}
+
+impl LoginFormStateRx {
+    #[cfg(client)]
+    fn reset(&self) {
+        self.username.set(String::new());
+        self.password.set(String::new());
+        self.remember_me.set(false);
+    }
 }
 
 #[derive(Clone)]
@@ -49,6 +56,22 @@ fn login_form_capsule<G: Html>(
             spawn_local_scoped(cx, async move {
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
                 global_state.modals_open.login.set(OpenState::Closed)
+            });
+        }
+    };
+
+    let handle_forgot_password = move |_event: Event| {
+        #[cfg(client)]
+        {
+            spawn_local_scoped(cx, async move {
+                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                global_state
+                    .modals_open
+                    .forgot_password
+                    .set(OpenState::Open);
+                // Close modal
+                state.reset();
+                global_state.modals_open.login.set(OpenState::Closed);
             });
         }
     };
@@ -93,6 +116,7 @@ fn login_form_capsule<G: Html>(
                 });
 
                 // Close modal
+                state.reset();
                 global_state.modals_open.login.set(OpenState::Closed);
             });
         }
@@ -124,14 +148,14 @@ fn login_form_capsule<G: Html>(
                                         div (class="flex items-center h-5"){
                                             input (bind:checked = state.remember_me, type = "checkbox", class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600") {}
                                         }
-                                    }
-                                    div (class="text-sm ml-3"){
-                                        label (class="font-medium text-gray-900 dark:text-gray-300"){"Remember me"}
+                                        div (class="text-sm ml-3"){
+                                            label (class="font-medium text-gray-900 dark:text-gray-300"){"Remember me"}
+                                        }
                                     }
                                 }},
                                 false => view!{cx, },
                             })
-                            a (class="text-sm text-blue-700 hover:underline dark:text-blue-500"){"Lost Password?"}
+                            a (on:click = handle_forgot_password, class="text-sm text-blue-700 hover:underline dark:text-blue-500"){"Lost Password?"}
                         }
                         button (on:click = handle_log_in, class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"){"Log in"}
                         div (class="text-sm font-medium text-gray-500 dark:text-gray-300"){

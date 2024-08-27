@@ -66,6 +66,7 @@ pub fn main<G: Html>() -> PerseusApp<G> {
         .template(crate::templates::one_v_one_board::get_template())
         .template(crate::templates::overall_board::get_template())
         .capsule_ref(&*crate::capsules::login_form::LOGIN_FORM)
+        .capsule_ref(&*crate::capsules::forgot_password_form::FORGOT_PASSWORD_FORM)
         .error_views(crate::error_views::get_error_views())
         .index_view(|cx| {
             view! { cx,
