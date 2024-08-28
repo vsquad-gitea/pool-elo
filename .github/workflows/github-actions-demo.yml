@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-      # TODO -> Change to actions/checkout@v3 once this is resolved https://github.com/actions/checkout/issues/1370
+        # TODO -> Change to actions/checkout@v3 once this is resolved https://github.com/actions/checkout/issues/1370
         uses: https://gitea.com/ScMi1/checkout@v1
       - name: Get rust
         uses: actions-rs/toolchain@v1
@@ -25,7 +25,7 @@ jobs:
       - name: Add wasm32 to cargo
         run: rustup target add wasm32-unknown-unknown
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2 
+        uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: "true"
       - name: Install perseus
@@ -42,57 +42,14 @@ jobs:
         run: npm install -D tailwindcss
       - name: Compile css
         run: npm run build
+        # TODO -> Remove wasm-opt-version once perseus is updated
       - name: Build the project
-        run: perseus deploy
-      - name: Download private docker registry cert
-        uses: nicklasfrahm/scp-action@v1.0.1
-        with:
-          direction: download
-          host: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_HOST_USERNAME }}
-          insecure_password: ${{ secrets.REGISTRY_HOST_PASSWORD }}
-          source: ${{ secrets.REGISTRY_CRT_PATH }}
-          target: ca.crt
-          insecure_ignore_fingerprint: true
-      
-      - name: Add directory for docker registry cert
-        run: 'mkdir -p /etc/docker/certs.d/${{ secrets.REGISTRY_HOST }}'
-
-      - name: Move private docker registry cert
-        run: 'mv ca.crt /etc/docker/certs.d/${{ secrets.REGISTRY_HOST }}'
-
-      - name: Install docker
-        uses: papodaca/install-docker-action@main
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          config-inline: |
-            [registry."${{ secrets.REGISTRY_HOST }}"]
-              insecure = true
-              ca=["/etc/docker/certs.d/${{ secrets.REGISTRY_HOST }}/ca.crt"]
-
-      - name: Login to private docker registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.REGISTRY_HOST }}/vsquad/pool-elo:${{ gitea.ref_name }}
-
-      - name: Trigger deployment
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ secrets.TRIGGER_DEPLOY_URL }}
-          method: POST
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"actionName": "deploy", "arguments": []}'
-          preventFailureOnNoResponse: 'true'
+        run: perseus --wasm-opt-version version_118 deploy --verbose
+      - name: Run clippy for server
+        run: RUSTFLAGS="--cfg=engine" cargo clippy --all --future-incompat-report -- -D warnings
+        continue-on-error: true
+      - name: Run clippy for frontend
+        run: RUSTFLAGS="--cfg=client" cargo clippy --all --future-incompat-report -- -D warnings
+        continue-on-error: true
+      - name: Check for formatting issues
+        run: cargo fmt --check

@@ -1,9 +1,14 @@
+mod capsules;
 mod components;
-mod data;
 mod endpoints;
+#[allow(unused_imports)]
+mod entity;
 mod error_views;
+mod global_state;
+mod models;
 #[cfg(engine)]
 mod server;
+mod state_enums;
 mod templates;
 
 use perseus::prelude::*;
@@ -18,7 +23,10 @@ cfg_if::cfg_if! {
             stores::MutableStore,
             turbine::Turbine,
         };
-        use crate::server::routes::register_routes;
+        use crate::server::routes::get_api_router;
+        use crate::server::server_state::ServerState;
+        use futures::executor::block_on;
+        use sea_orm::Database;
     }
 }
 
@@ -31,9 +39,24 @@ pub async fn dflt_server<M: MutableStore + 'static, T: TranslationsManager + 'st
     let addr: SocketAddr = format!("{}:{}", host, port)
         .parse()
         .expect("Invalid address provided to bind to.");
-    let mut app = perseus_axum::get_router(turbine, opts).await;
+    let app = perseus_axum::get_router(turbine, opts).await;
 
-    app = register_routes(app);
+    // TODO -> Update to use environment variable
+    // TODO -> error handling
+    // Includes making database connection
+    let db_conn = Database::connect("postgres://elo:elo@localhost:5432/elo_app");
+    let db_conn = block_on(db_conn);
+    let db_conn = match db_conn {
+        Ok(db_conn) => db_conn,
+        Err(err) => {
+            panic!("{}", err);
+        }
+    };
+    let state = ServerState { db_conn };
+
+    // Get server routes
+    let api_router = get_api_router(state);
+    let app = app.merge(api_router);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
@@ -46,11 +69,14 @@ pub fn main<G: Html>() -> PerseusApp<G> {
     env_logger::init();
 
     PerseusApp::new()
-        .global_state_creator(crate::templates::global_state::get_global_state_creator())
+        .global_state_creator(crate::global_state::get_global_state_creator())
         .template(crate::templates::index::get_template())
         .template(crate::templates::add_game_form::get_template())
         .template(crate::templates::one_v_one_board::get_template())
         .template(crate::templates::overall_board::get_template())
+        .capsule_ref(&*crate::capsules::login_form::LOGIN_FORM)
+        .capsule_ref(&*crate::capsules::forgot_password_form::FORGOT_PASSWORD_FORM)
+        .capsule_ref(&*crate::capsules::register_form::REGISTER_FORM)
         .error_views(crate::error_views::get_error_views())
         .index_view(|cx| {
             view! { cx,

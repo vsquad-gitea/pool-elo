@@ -1,34 +1,23 @@
 // (Server only) Routes
+use crate::endpoints::{FORGOT_PASSWORD, LOGIN, LOGIN_TEST, REGISTER};
+use axum::routing::{post, Router};
+use futures::executor::block_on;
+use sea_orm::Database;
 
-use crate::{
-    data::{
-        pool_match::{PoolMatch, PoolMatchList},
-        store::DATA,
+use super::{
+    auth::{
+        forgot_password::post_forgot_password,
+        login::{post_login_user, post_test_login},
+        register::post_register_user,
     },
-    endpoints::MATCH,
+    server_state::ServerState,
 };
-use axum::{
-    extract::Json,
-    routing::{post, Router},
-};
-use std::thread;
 
-pub fn register_routes(app: Router) -> Router {
-    let app = app.route(MATCH, post(post_match));
-    app
-}
-
-async fn post_match(Json(pool_match): Json<PoolMatch>) -> Json<PoolMatchList> {
-    // Update the store with the new match
-    let matches = thread::spawn(move || {
-        // Get the store
-        let mut data = DATA.lock().unwrap();
-        (*data).matches.add_pool_match(pool_match);
-        println!("{:?}", (*data).matches.pool_matches);
-        (*data).matches.clone()
-    })
-    .join()
-    .unwrap();
-
-    Json(matches)
+pub fn get_api_router(state: ServerState) -> Router {
+    Router::new()
+        .route(REGISTER, post(post_register_user))
+        .route(LOGIN, post(post_login_user))
+        .route(LOGIN_TEST, post(post_test_login))
+        .route(FORGOT_PASSWORD, post(post_forgot_password))
+        .with_state(state)
 }
