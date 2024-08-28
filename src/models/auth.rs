@@ -33,6 +33,15 @@ pub struct WebAuthInfo {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+pub struct RegisterRequest {
+    pub username: String,
+    pub password: String,
+    pub email: String,
+    pub nickname: String,
+    pub registration_code: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ForgotPasswordRequest {
     pub username: String,
     pub contact_info: String,

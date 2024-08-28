@@ -2,6 +2,7 @@ use crate::{
     capsules::{
         forgot_password_form::{ForgotPasswordFormProps, FORGOT_PASSWORD_FORM},
         login_form::{LoginFormProps, LOGIN_FORM},
+        register_form::{RegisterFormProps, REGISTER_FORM},
     },
     components::header::{Header, HeaderProps},
     global_state::AppStateRx,
@@ -49,6 +50,22 @@ pub fn Layout<'a, G: Html>(
                         (LOGIN_FORM.widget(cx, "",
                             LoginFormProps{
                                 remember_me: true,
+                            }
+                        ))
+                    }
+                }
+                OpenState::Closed => {
+                    view!{ cx, }
+                }
+            })
+            (match *global_state.modals_open.register.get() {
+                OpenState::Open => {
+                    view! { cx,
+                        (REGISTER_FORM.widget(cx, "",
+                            RegisterFormProps{
+                                registration_code: true,
+                                nickname: true,
+                                email: true,
                             }
                         ))
                     }

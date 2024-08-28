@@ -145,14 +145,14 @@ fn login_form_capsule<G: Html>(
                         }
                     }
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
-                        h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in to our platform"}
+                        h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in"}
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
                             input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
                         }
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300"){"Password"}
-                            input (bind:value = state.password, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"){}
+                            input (bind:value = state.password, type = "password", class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"){}
                         }
                         div (class="flex justify-between"){
                             (match props.remember_me {

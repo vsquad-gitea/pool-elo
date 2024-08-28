@@ -15,11 +15,11 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(User::Table)
                     .col(pk_auto(User::Id))
-                    .col(string(User::Username))
-                    .col(string(User::Password))
-                    .col(string(User::Salt))
-                    .col(timestamp_with_time_zone(User::CreationTime))
-                    .col(timestamp_with_time_zone(User::LastActiveTime))
+                    .col(string_uniq(User::Username))
+                    .col(string(User::PasswordHashAndSalt))
+                    .col(string_null(User::Nickname))
+                    .col(timestamp(User::CreationTime))
+                    .col(timestamp(User::LastActiveTime))
                     .col(boolean(User::IsAdmin))
                     .col(string_null(User::Email))
                     .col(string_null(User::Avatar))
@@ -41,8 +41,8 @@ pub enum User {
     Table,
     Id,
     Username,
-    Password,
-    Salt,
+    PasswordHashAndSalt,
+    Nickname,
     CreationTime,
     LastActiveTime,
     IsAdmin,

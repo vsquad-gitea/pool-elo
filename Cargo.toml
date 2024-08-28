@@ -19,7 +19,6 @@ once_cell = "1.18.0"
 web-sys = { version = "0.3.64", features = ["Window", "Storage"] }
 cfg-if = "1.0.0"
 chrono = { version = "0.4.38", features = ["serde", "wasm-bindgen"] }
-password-auth = "1.0.0"
 lazy_static = "1.5"
 
 [target.'cfg(engine)'.dev-dependencies]
@@ -38,6 +37,7 @@ sea-orm = { version = "1.0", features = [
     "with-chrono",
 ] }
 jsonwebtoken = "9.3.0"
+argon2 = "0.5"
 
 [target.'cfg(client)'.dependencies]
 wasm-bindgen = "0.2.93"

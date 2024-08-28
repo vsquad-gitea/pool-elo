@@ -1,24 +1,60 @@
+use crate::entity::prelude::*;
+use crate::models::auth::{Claims, LoginInfo, LoginResponse};
 use crate::{
-    models::auth::{Claims, LoginInfo, LoginResponse},
+    entity::user::{self, Entity},
+    models::auth::RegisterRequest,
     server::server_state::ServerState,
 };
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::SaltString;
+use argon2::Argon2;
+use argon2::PasswordHash;
+use argon2::PasswordHasher;
+use argon2::PasswordVerifier;
 use axum::{
     extract::{Json, State},
     http::{HeaderMap, StatusCode},
 };
+use futures::sink::Fanout;
+use sea_orm::ColumnTrait;
+use sea_orm::EntityTrait;
+use sea_orm::InsertResult;
+use sea_orm::QueryFilter;
+use sea_orm::Set;
+
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
-pub fn is_valid_user(username: &str, password: &str) -> bool {
-    return true;
+pub async fn credentials_are_correct(username: &str, password: &str, state: &ServerState) -> bool {
+    // Get user
+    let existing_user: Option<user::Model> = User::find()
+        .filter(user::Column::Username.eq(username))
+        .one(&state.db_conn)
+        .await
+        .unwrap();
+    let hash_to_check: String = match existing_user {
+        Some(user) => user.password_hash_and_salt,
+        None => {
+            // @todo make dummy password hash
+            return false;
+        }
+    };
+
+    return Argon2::default()
+        .verify_password(
+            password.as_bytes(),
+            &PasswordHash::new(hash_to_check.as_str()).unwrap(),
+        )
+        .is_ok();
 }
 
 pub async fn post_login_user(
     State(state): State<ServerState>,
     Json(login_info): Json<LoginInfo>,
 ) -> Result<Json<LoginResponse>, StatusCode> {
-    let user_authenticated = is_valid_user(&login_info.username, &login_info.password);
+    let user_authenticated =
+        credentials_are_correct(&login_info.username, &login_info.password, &state);
 
-    match user_authenticated {
+    match user_authenticated.await {
         false => Err(StatusCode::UNAUTHORIZED),
         true => {
             let expires = match login_info.remember_me {
