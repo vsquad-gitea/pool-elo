@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
+use crate::models::generic::GenericResponse;
+
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::{
@@ -30,6 +32,7 @@ struct RegisterFormState {
     nickname: String,
     registration_code: String,
     email: String,
+    error: String,
 }
 
 impl RegisterFormStateRx {
@@ -40,6 +43,7 @@ impl RegisterFormStateRx {
         self.nickname.set(String::new());
         self.registration_code.set(String::new());
         self.email.set(String::new());
+        self.error.set(String::new());
     }
 }
 
@@ -90,10 +94,11 @@ fn register_form_capsule<G: Html>(
                     .unwrap();
 
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-
-                if response.status() != StatusCode::OK {
+                let status = response.status();
+                let response_data = response.json::<GenericResponse>().await.unwrap();
+                if status != StatusCode::OK {
                     // todo update to some type of alert
-                    state.username.set(response.status().to_string());
+                    state.error.set(response_data.status);
                     return;
                 }
 
@@ -119,6 +124,22 @@ fn register_form_capsule<G: Html>(
                     }
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Register"}
+
+
+                        (match state.error.get().as_ref() != "" {
+                            true => { view!{cx,
+                                div (role="alert") {
+                                    div (class="bg-red-500 text-white font-bold rounded-t px-4 py-2") {
+                                        "Error"
+                                    }
+                                    div (class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700"){
+                                        p {(state.error.get())}
+                                    }
+                                }
+                            }},
+                            false => {view!{cx,}},
+                        })
+
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
                             input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
@@ -174,6 +195,7 @@ async fn get_build_state(_info: StateGeneratorInfo<()>) -> RegisterFormState {
     RegisterFormState {
         username: String::new(),
         password: String::new(),
+        error: String::new(),
         nickname: String::new(),
         registration_code: String::new(),
         email: String::new(),
