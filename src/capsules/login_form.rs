@@ -57,6 +57,7 @@ fn login_form_capsule<G: Html>(
         {
             spawn_local_scoped(cx, async move {
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+                state.reset();
                 global_state.modals_open.login.set(OpenState::Closed)
             });
         }
