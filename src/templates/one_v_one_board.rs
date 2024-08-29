@@ -9,7 +9,7 @@ struct PageState {}
 
 fn one_v_one_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageStateRx) -> View<G> {
     view! { cx,
-        Layout(title = "1v1 Leaderboard", game = GameState::Pool) {
+        Layout(game = GameState::Pool) {
             p { "leaderboard" }
         }
     }

@@ -9,11 +9,10 @@ cfg_if::cfg_if! {
         use crate::{
             models::auth::{RegisterRequest},
             endpoints::REGISTER,
-            state_enums::{LoginState, OpenState},
-            templates::{get_api_path},
-            global_state::{self, AppStateRx},
+            state_enums::OpenState,
+            templates::get_api_path,
+            global_state::AppStateRx,
             models::{
-                auth::WebAuthInfo,
                 generic::GenericResponse
             },
         };
@@ -120,7 +119,7 @@ fn register_form_capsule<G: Html>(
                 div (class="bg-white rounded-lg shadow relative dark:bg-gray-700"){
                     div (class="flex justify-end p-2"){
                         button (on:click = close_modal, class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){
-                            "Back"
+                            "Close"
                         }
                     }
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {

@@ -14,7 +14,6 @@ use sycamore::prelude::*;
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {
     pub game: GameState,
-    pub title: &'a str,
     pub children: Children<'a, G>,
 }
 
@@ -23,11 +22,7 @@ pub struct LayoutProps<'a, G: Html> {
 #[component]
 pub fn Layout<'a, G: Html>(
     cx: Scope<'a>,
-    LayoutProps {
-        game,
-        title,
-        children,
-    }: LayoutProps<'a, G>,
+    LayoutProps { game, children }: LayoutProps<'a, G>,
 ) -> View<G> {
     let children = children.call(cx);
 
@@ -39,7 +34,7 @@ pub fn Layout<'a, G: Html>(
 
     view! { cx,
         // Main page header, including login functionality
-        Header(game = game, title = title)
+        Header(game = game)
 
         // Modals
         section(class = "flex-2") {

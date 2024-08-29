@@ -16,13 +16,12 @@ cfg_if::cfg_if! {
 }
 
 #[derive(Prop)]
-pub struct HeaderProps<'a> {
+pub struct HeaderProps {
     pub game: GameState,
-    pub title: &'a str,
 }
 
 #[component]
-pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderProps<'a>) -> View<G> {
+pub fn Header<'a, G: Html>(cx: Scope<'a>, props: HeaderProps) -> View<G> {
     // Get global state to get authentication info
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
@@ -63,7 +62,7 @@ pub fn Header<'a, G: Html>(cx: Scope<'a>, HeaderProps { game, title }: HeaderPro
 
                 // Title
                 div(class = "text-gray-700 text-2xl font-semibold py-2") {
-                    "Pool Elo - Season 1"
+                   (props.game.to_string()) " - Season 1"
                 }
 
                 // Login / register or user buttons

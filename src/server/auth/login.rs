@@ -73,7 +73,7 @@ pub async fn post_login_user(
 }
 
 pub async fn post_test_login(
-    State(state): State<ServerState>,
+    State(_): State<ServerState>,
     header_map: HeaderMap,
 ) -> Result<Json<String>, StatusCode> {
     if let Some(auth_header) = header_map.get("Authorization") {
