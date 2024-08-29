@@ -4,14 +4,6 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-cfg_if::cfg_if! {
-    if #[cfg(client)] {
-        use crate::global_state::AppStateRx;
-        use crate::templates::get_api_path;
-        use chrono::Utc;
-    }
-}
-
 // Reactive page
 
 #[derive(Serialize, Deserialize, Clone, ReactiveState)]
@@ -39,7 +31,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
     };
 
     view! { cx,
-        Layout(title = "Add Game Results", game = GameState::Pool) {
+        Layout(game = GameState::Pool) {
             div (class = "flex flex-wrap") {
                 select {
                     option (value="red")

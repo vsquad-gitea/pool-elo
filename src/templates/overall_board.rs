@@ -12,7 +12,7 @@ fn overall_board_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, _state: &'a PageSta
     let _global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     view! { cx,
-        Layout(title = "Overall Leaderboard", game = GameState::Pool) {
+        Layout(game = GameState::Pool) {
             ul {
                 (View::new_fragment(
                     vec![],

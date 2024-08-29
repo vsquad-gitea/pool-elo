@@ -1,8 +1,6 @@
 // (Server only) Routes
 use crate::endpoints::{FORGOT_PASSWORD, LOGIN, LOGIN_TEST, REGISTER};
 use axum::routing::{post, Router};
-use futures::executor::block_on;
-use sea_orm::Database;
 
 use super::{
     auth::{

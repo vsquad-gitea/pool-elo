@@ -4,18 +4,16 @@ use crate::{
         login_form::{LoginFormProps, LOGIN_FORM},
         register_form::{RegisterFormProps, REGISTER_FORM},
     },
-    components::header::{Header, HeaderProps},
+    components::header::Header,
     global_state::AppStateRx,
-    state_enums::{GameState, LoginState, OpenState},
+    state_enums::{GameState, OpenState},
 };
 use perseus::prelude::*;
 use sycamore::prelude::*;
-use web_sys::Event;
 
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {
     pub game: GameState,
-    pub title: &'a str,
     pub children: Children<'a, G>,
 }
 
@@ -24,11 +22,7 @@ pub struct LayoutProps<'a, G: Html> {
 #[component]
 pub fn Layout<'a, G: Html>(
     cx: Scope<'a>,
-    LayoutProps {
-        game,
-        title,
-        children,
-    }: LayoutProps<'a, G>,
+    LayoutProps { game, children }: LayoutProps<'a, G>,
 ) -> View<G> {
     let children = children.call(cx);
 
@@ -40,7 +34,7 @@ pub fn Layout<'a, G: Html>(
 
     view! { cx,
         // Main page header, including login functionality
-        Header(game = game, title = title)
+        Header(game = game)
 
         // Modals
         section(class = "flex-2") {

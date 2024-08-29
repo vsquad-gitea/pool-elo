@@ -1,23 +1,15 @@
-use crate::entity::prelude::*;
-use crate::models::generic::GenericResponse;
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::SaltString;
-use argon2::Argon2;
-use argon2::PasswordHash;
-use argon2::PasswordHasher;
-use axum::{extract::State, http::StatusCode, Json};
-use chrono::Utc;
-use sea_orm::ColumnTrait;
-use sea_orm::EntityTrait;
-use sea_orm::InsertResult;
-use sea_orm::QueryFilter;
-use sea_orm::Set;
-
 use crate::{
-    entity::user::{self, Entity},
-    models::auth::RegisterRequest,
+    entity::{prelude::*, user},
+    models::{auth::RegisterRequest, generic::GenericResponse},
     server::server_state::ServerState,
 };
+use argon2::{
+    password_hash::{rand_core::OsRng, SaltString},
+    Argon2, PasswordHash, PasswordHasher,
+};
+use axum::{extract::State, http::StatusCode, Json};
+use chrono::Utc;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
 
 pub async fn post_register_user(
     State(state): State<ServerState>,
@@ -59,7 +51,7 @@ pub async fn post_register_user(
         username: Set(username),
         password_hash_and_salt: Set(phc_string),
         nickname: Set({
-            if register_info.nickname == "" {
+            if register_info.nickname.is_empty() {
                 None
             } else {
                 Some(register_info.nickname)
@@ -69,7 +61,7 @@ pub async fn post_register_user(
         last_active_time: Set(Utc::now().naive_utc()),
         is_admin: Set(false),
         email: Set({
-            if register_info.email == "" {
+            if register_info.email.is_empty() {
                 None
             } else {
                 Some(register_info.email)
@@ -79,11 +71,16 @@ pub async fn post_register_user(
         forgot_password_request: Set(None),
         ..Default::default()
     };
-    // TODO -> error handling
-    let db_resp = user::Entity::insert(new_user)
-        .exec(&state.db_conn)
-        .await
-        .unwrap();
+    let db_resp = user::Entity::insert(new_user).exec(&state.db_conn).await;
+    match db_resp {
+        Ok(_) => {}
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(GenericResponse::err("Database error")),
+            );
+        }
+    };
 
-    return (StatusCode::OK, Json(GenericResponse::ok()));
+    (StatusCode::OK, Json(GenericResponse::ok()))
 }

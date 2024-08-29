@@ -9,10 +9,12 @@ cfg_if::cfg_if! {
         use crate::{
             models::auth::{RegisterRequest},
             endpoints::REGISTER,
-            state_enums::{LoginState, OpenState},
-            templates::{get_api_path},
-            global_state::{self, AppStateRx},
-            models::auth::WebAuthInfo,
+            state_enums::OpenState,
+            templates::get_api_path,
+            global_state::AppStateRx,
+            models::{
+                generic::GenericResponse
+            },
         };
         use reqwest::StatusCode;
     }
@@ -30,6 +32,7 @@ struct RegisterFormState {
     nickname: String,
     registration_code: String,
     email: String,
+    error: String,
 }
 
 impl RegisterFormStateRx {
@@ -40,6 +43,7 @@ impl RegisterFormStateRx {
         self.nickname.set(String::new());
         self.registration_code.set(String::new());
         self.email.set(String::new());
+        self.error.set(String::new());
     }
 }
 
@@ -90,10 +94,11 @@ fn register_form_capsule<G: Html>(
                     .unwrap();
 
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-
-                if response.status() != StatusCode::OK {
+                let status = response.status();
+                let response_data = response.json::<GenericResponse>().await.unwrap();
+                if status != StatusCode::OK {
                     // todo update to some type of alert
-                    state.username.set(response.status().to_string());
+                    state.error.set(response_data.status);
                     return;
                 }
 
@@ -114,11 +119,27 @@ fn register_form_capsule<G: Html>(
                 div (class="bg-white rounded-lg shadow relative dark:bg-gray-700"){
                     div (class="flex justify-end p-2"){
                         button (on:click = close_modal, class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){
-                            "Back"
+                            "Close"
                         }
                     }
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Register"}
+
+
+                        (match state.error.get().as_ref() != "" {
+                            true => { view!{cx,
+                                div (role="alert") {
+                                    div (class="bg-red-500 text-white font-bold rounded-t px-4 py-2") {
+                                        "Error"
+                                    }
+                                    div (class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700"){
+                                        p {(state.error.get())}
+                                    }
+                                }
+                            }},
+                            false => {view!{cx,}},
+                        })
+
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
                             input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
@@ -174,6 +195,7 @@ async fn get_build_state(_info: StateGeneratorInfo<()>) -> RegisterFormState {
     RegisterFormState {
         username: String::new(),
         password: String::new(),
+        error: String::new(),
         nickname: String::new(),
         registration_code: String::new(),
         email: String::new(),
