@@ -21,7 +21,7 @@ pub struct HeaderProps {
 }
 
 #[component]
-pub fn Header<'a, G: Html>(cx: Scope<'a>, props: HeaderProps) -> View<G> {
+pub fn Header<G: Html>(cx: Scope, props: HeaderProps) -> View<G> {
     // Get global state to get authentication info
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 

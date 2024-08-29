@@ -25,13 +25,11 @@ pub async fn post_forgot_password(
             user.forgot_password_request = Set(Some(password_request.contact_info));
             let user = user.update(&state.db_conn).await;
             match user {
-                Ok(_) => return (StatusCode::OK, Json(GenericResponse::ok())),
-                Err(_) => {
-                    return (
-                        StatusCode::BAD_REQUEST,
-                        Json(GenericResponse::err("Database error")),
-                    )
-                }
+                Ok(_) => (StatusCode::OK, Json(GenericResponse::ok())),
+                Err(_) => (
+                    StatusCode::BAD_REQUEST,
+                    Json(GenericResponse::err("Database error")),
+                ),
             }
         }
         None => (

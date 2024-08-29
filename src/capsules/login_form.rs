@@ -10,6 +10,7 @@ cfg_if::cfg_if! {
             endpoints::LOGIN,
             global_state::{AppStateRx},
             models::auth::{LoginInfo, LoginResponse, WebAuthInfo},
+            models::generic::GenericResponse,
             state_enums::{OpenState},
             templates::get_api_path,
         };
@@ -27,6 +28,7 @@ struct LoginFormState {
     username: String,
     password: String,
     remember_me: bool,
+    error: String,
 }
 
 impl LoginFormStateRx {
@@ -35,6 +37,7 @@ impl LoginFormStateRx {
         self.username.set(String::new());
         self.password.set(String::new());
         self.remember_me.set(false);
+        self.error.set(String::new());
     }
 }
 
@@ -112,8 +115,9 @@ fn login_form_capsule<G: Html>(
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
                 if response.status() != StatusCode::OK {
-                    // todo update to some type of alert
-                    state.username.set(response.status().to_string());
+                    let response = response.json::<GenericResponse>().await.unwrap();
+                    state.error.set(response.status.to_string());
+                    state.reset();
                     return;
                 }
 
@@ -145,6 +149,21 @@ fn login_form_capsule<G: Html>(
                     }
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in"}
+
+                        (match state.error.get().as_ref() != "" {
+                            true => { view!{cx,
+                                div (role="alert") {
+                                    div (class="bg-red-500 text-white font-bold rounded-t px-4 py-2") {
+                                        "Error"
+                                    }
+                                    div (class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700"){
+                                        p {(state.error.get())}
+                                    }
+                                }
+                            }},
+                            false => {view!{cx,}},
+                        })
+
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
                             input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
@@ -190,8 +209,9 @@ pub fn get_capsule<G: Html>() -> Capsule<G, LoginFormProps> {
 #[engine_only_fn]
 async fn get_build_state(_info: StateGeneratorInfo<()>) -> LoginFormState {
     LoginFormState {
-        username: "".to_owned(),
-        password: "".to_owned(),
+        username: String::new(),
+        password: String::new(),
         remember_me: false,
+        error: String::new(),
     }
 }
