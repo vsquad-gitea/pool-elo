@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -15,14 +17,18 @@ pub enum GameState {
     TableTennis,
 }
 
-impl ToString for GameState {
-    fn to_string(&self) -> String {
-        match self {
-            GameState::None => String::new(),
-            GameState::Pool => "Pool".to_owned(),
-            GameState::Pickleball => "Pool".to_owned(),
-            GameState::TableTennis => "Pool".to_owned(),
-        }
+impl Display for GameState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                GameState::None => "",
+                GameState::Pool => "Pool",
+                GameState::Pickleball => "Pickle Ball",
+                GameState::TableTennis => "Table Tennis",
+            }
+        )
     }
 }
 

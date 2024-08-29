@@ -51,7 +51,7 @@ pub async fn post_register_user(
         username: Set(username),
         password_hash_and_salt: Set(phc_string),
         nickname: Set({
-            if register_info.nickname == "" {
+            if register_info.nickname.is_empty() {
                 None
             } else {
                 Some(register_info.nickname)
@@ -61,7 +61,7 @@ pub async fn post_register_user(
         last_active_time: Set(Utc::now().naive_utc()),
         is_admin: Set(false),
         email: Set({
-            if register_info.email == "" {
+            if register_info.email.is_empty() {
                 None
             } else {
                 Some(register_info.email)
@@ -82,5 +82,5 @@ pub async fn post_register_user(
         }
     };
 
-    return (StatusCode::OK, Json(GenericResponse::ok()));
+    (StatusCode::OK, Json(GenericResponse::ok()))
 }

@@ -99,11 +99,13 @@ pub async fn post_test_login(
             if auth_header_str.starts_with("Bearer ") {
                 let token = auth_header_str.trim_start_matches("Bearer ").to_string();
                 // @todo change secret
-                if let Ok(_) = decode::<Claims>(
+                if decode::<Claims>(
                     &token,
                     &DecodingKey::from_secret("secret".as_ref()),
                     &Validation::default(),
-                ) {
+                )
+                .is_ok()
+                {
                     return Ok(Json("Logged in".to_owned()));
                 }
             }

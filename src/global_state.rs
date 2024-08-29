@@ -47,7 +47,7 @@ impl AuthDataRx {
 
         // Save token to session storage
         self.username.set(Some(auth_info.username.clone()));
-        self.remember_me.set(Some(auth_info.remember_me.clone()));
+        self.remember_me.set(Some(auth_info.remember_me));
         self.auth_info.set(Some(auth_info));
         self.state.set(LoginState::Authenticated);
     }

@@ -95,7 +95,7 @@ fn login_form_capsule<G: Html>(
         #[cfg(client)]
         {
             spawn_local_scoped(cx, async move {
-                let remember_me = state.remember_me.get().as_ref().clone();
+                let remember_me = *state.remember_me.get().as_ref();
                 let username = state.username.get().as_ref().clone();
                 let login_info = LoginInfo {
                     username: username.clone(),
