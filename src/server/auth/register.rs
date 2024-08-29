@@ -74,10 +74,10 @@ pub async fn post_register_user(
     let db_resp = user::Entity::insert(new_user).exec(&state.db_conn).await;
     match db_resp {
         Ok(_) => {}
-        Err(err) => {
+        Err(_) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(GenericResponse::err(err.to_string().as_str())),
+                Json(GenericResponse::err("Database error")),
             );
         }
     };

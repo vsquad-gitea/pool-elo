@@ -7,7 +7,7 @@ use axum::{
     extract::{Json, State},
     http::StatusCode,
 };
-use sea_orm::{ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter, Set};
 
 pub async fn post_forgot_password(
     State(state): State<ServerState>,
@@ -23,7 +23,16 @@ pub async fn post_forgot_password(
         Some(user) => {
             let mut user = user.into_active_model();
             user.forgot_password_request = Set(Some(password_request.contact_info));
-            (StatusCode::OK, Json(GenericResponse::ok()))
+            let user = user.update(&state.db_conn).await;
+            match user {
+                Ok(_) => return (StatusCode::OK, Json(GenericResponse::ok())),
+                Err(_) => {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(GenericResponse::err("Database error")),
+                    )
+                }
+            }
         }
         None => (
             StatusCode::BAD_REQUEST,
