@@ -117,7 +117,6 @@ fn login_form_capsule<G: Html>(
                 if response.status() != StatusCode::OK {
                     let response = response.json::<GenericResponse>().await.unwrap();
                     state.error.set(response.status.to_string());
-                    state.reset();
                     return;
                 }
 
