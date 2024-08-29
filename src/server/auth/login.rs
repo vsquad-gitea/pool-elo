@@ -1,28 +1,18 @@
-use crate::entity::prelude::*;
-use crate::models::auth::{Claims, LoginInfo, LoginResponse};
 use crate::{
-    entity::user::{self, Entity},
-    models::auth::RegisterRequest,
+    entity::{
+        prelude::*,
+        user::{self},
+    },
+    models::auth::{Claims, LoginInfo, LoginResponse},
     server::server_state::ServerState,
 };
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::SaltString;
-use argon2::Argon2;
-use argon2::PasswordHash;
-use argon2::PasswordHasher;
-use argon2::PasswordVerifier;
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{
     extract::{Json, State},
     http::{HeaderMap, StatusCode},
 };
-use futures::sink::Fanout;
-use sea_orm::ColumnTrait;
-use sea_orm::EntityTrait;
-use sea_orm::InsertResult;
-use sea_orm::QueryFilter;
-use sea_orm::Set;
-
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 pub async fn credentials_are_correct(username: &str, password: &str, state: &ServerState) -> bool {
     // Get user

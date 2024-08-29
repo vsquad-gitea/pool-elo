@@ -4,13 +4,12 @@ use crate::{
         login_form::{LoginFormProps, LOGIN_FORM},
         register_form::{RegisterFormProps, REGISTER_FORM},
     },
-    components::header::{Header, HeaderProps},
+    components::header::Header,
     global_state::AppStateRx,
-    state_enums::{GameState, LoginState, OpenState},
+    state_enums::{GameState, OpenState},
 };
 use perseus::prelude::*;
 use sycamore::prelude::*;
-use web_sys::Event;
 
 #[derive(Prop)]
 pub struct LayoutProps<'a, G: Html> {

@@ -1,19 +1,19 @@
-use std::sync::Arc;
-
 use perseus::prelude::*;
 use sycamore::prelude::*;
 use web_sys::Event;
 
 use crate::{
-    capsules::{
-        forgot_password_form::{ForgotPasswordFormProps, FORGOT_PASSWORD_FORM},
-        login_form::{LoginFormProps, LOGIN_FORM},
-    },
-    endpoints::LOGIN,
     global_state::AppStateRx,
-    models::auth::LoginInfo,
-    state_enums::{GameState, LoginState, OpenState},
+    state_enums::{GameState, LoginState},
 };
+
+cfg_if::cfg_if! {
+    if #[cfg(client)] {
+        use crate::{
+            state_enums::OpenState,
+        };
+    }
+}
 
 #[derive(Prop)]
 pub struct HeaderProps<'a> {

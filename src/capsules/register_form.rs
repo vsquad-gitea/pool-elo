@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::models::generic::GenericResponse;
-
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::{
@@ -14,7 +12,10 @@ cfg_if::cfg_if! {
             state_enums::{LoginState, OpenState},
             templates::{get_api_path},
             global_state::{self, AppStateRx},
-            models::auth::WebAuthInfo,
+            models::{
+                auth::WebAuthInfo,
+                generic::GenericResponse
+            },
         };
         use reqwest::StatusCode;
     }

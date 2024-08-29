@@ -4,15 +4,9 @@ use perseus::{prelude::*, state::GlobalStateCreator};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::auth::{Claims, WebAuthInfo},
+    models::auth::WebAuthInfo,
     state_enums::{LoginState, OpenState},
 };
-
-cfg_if::cfg_if! {
-    if #[cfg(engine)] {
-
-    }
-}
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "AppStateRx")]
@@ -33,6 +27,7 @@ pub struct AuthData {
 }
 
 impl AuthDataRx {
+    #[cfg(client)]
     pub fn handle_log_in(&self, auth_info: WebAuthInfo) {
         // Save new token to persistent storage
         if auth_info.remember_me {
@@ -56,7 +51,7 @@ impl AuthDataRx {
         self.auth_info.set(Some(auth_info));
         self.state.set(LoginState::Authenticated);
     }
-
+    #[cfg(client)]
     pub fn handle_log_out(&self) {
         // Delete persistent storage
         // TODO -> handle error if local storage is not readable in browser
