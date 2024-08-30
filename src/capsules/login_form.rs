@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
+use crate::components::error_block::{ErrorBlock, ErrorBlockProps};
+
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::{
@@ -150,19 +152,7 @@ fn login_form_capsule<G: Html>(
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in"}
 
-                        (match state.error.get().as_ref() != "" {
-                            true => { view!{cx,
-                                div (role="alert") {
-                                    div (class="bg-red-500 text-white font-bold rounded-t px-4 py-2") {
-                                        "Error"
-                                    }
-                                    div (class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700"){
-                                        p {(state.error.get())}
-                                    }
-                                }
-                            }},
-                            false => {view!{cx,}},
-                        })
+                        ErrorBlock(error =  state.error.clone())
 
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
