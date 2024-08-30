@@ -2,7 +2,7 @@ use perseus::prelude::*;
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::components::static_components::close_button_path::CloseButtonPath;
+use crate::components::static_components::close_button::CloseButtonPath;
 
 #[component(inline_props)]
 pub fn ErrorBlock<'a, G: Html>(cx: Scope<'a>, error: RcSignal<String>) -> View<G> {

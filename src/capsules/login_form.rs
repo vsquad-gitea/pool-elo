@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::components::sub_components::error_block::ErrorBlock;
+use crate::components::{
+    static_components::close_button::CloseButtonSvg, sub_components::error_block::ErrorBlock,
+};
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
@@ -81,19 +83,6 @@ fn login_form_capsule<G: Html>(
         }
     };
 
-    let handle_register = move |_event: Event| {
-        #[cfg(client)]
-        {
-            spawn_local_scoped(cx, async move {
-                let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-                global_state.modals_open.register.set(OpenState::Open);
-                // Close modal
-                state.reset();
-                global_state.modals_open.login.set(OpenState::Closed);
-            });
-        }
-    };
-
     let handle_log_in = move |_event: Event| {
         #[cfg(client)]
         {
@@ -141,49 +130,44 @@ fn login_form_capsule<G: Html>(
     };
 
     view! { cx,
-        div (class="overflow-x-hidden overflow-y-auto fixed h-modal md:h-full top-4 left-0 right-0 md:inset-0 z-50 justify-center items-center"){
-            div (class="relative md:mx-auto w-full md:w-1/2 lg:w-1/3 z-0 my-10") {
-                div (class="bg-white rounded-lg shadow relative dark:bg-gray-700"){
-                    div (class="flex justify-end p-2"){
-                        button (on:click = close_modal, class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"){
-                            "Close"
-                        }
-                    }
-                    div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
-                        h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in"}
+        dialog (class="modal-open modal modal-bottom sm:modal-middle") {
+            div (class="modal-box"){
+                // Header row - title and close button
+                h3 (class="text-lg font-bold mb-4 text-center"){"Sign in"}
+                button (on:click = close_modal, class = "btn btn-circle right-2 top-2 absolute") { CloseButtonSvg {} }
 
-                        // Add component for handling error messages
-                        ErrorBlock(error = state.error.clone())
+                // Add component for handling error messages
+                ErrorBlock(error = state.error.clone())
 
-                        div {
-                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}
-                            input (bind:value = state.username, class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white") {}
-                        }
-                        div {
-                            label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300"){"Password"}
-                            input (bind:value = state.password, type = "password", class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"){}
-                        }
-                        div (class="flex justify-between"){
-                            (match props.remember_me {
-                                true => { view!{ cx,
-                                    div (class="flex items-start"){
-                                        div (class="flex items-center h-5"){
-                                            input (bind:checked = state.remember_me, type = "checkbox", class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600") {}
-                                        }
-                                        div (class="text-sm ml-3"){
-                                            label (class="font-medium text-gray-900 dark:text-gray-300"){"Remember me"}
-                                        }
-                                    }
-                                }},
-                                false => view!{cx, },
-                            })
-                            button (on:click = handle_forgot_password, class="text-sm text-blue-700 hover:underline dark:text-blue-500"){"Lost Password?"}
-                        }
-                        button (on:click = handle_log_in, class="btn"){"Log in"}
-                        div (class="text-sm font-medium text-gray-500 dark:text-gray-300"){
-                            button (on:click = handle_register, class="text-blue-700 hover:underline dark:text-blue-500"){"Create account"}
-                        }
-                    }
+                // Username field
+                div (class = "label") { span (class = "label-text") { "Username" } }
+                input (bind:value = state.username, class = "input input-bordered w-full")
+
+                // Password field
+                div (class = "label") { span (class = "label-text") { "Password" } }
+                input (bind:value = state.password, type = "password", class = "input input-bordered w-full")
+
+                // Remember me button and forget password button
+                div (class="flex justify-between items-center mt-1"){
+                    // Remember me button
+                    (match props.remember_me {
+                        true => { view!{ cx,
+                            div (class = "flex items-start  form-control") {
+                                label (class = "label cursor-pointer") {
+                                    span (class = "label-text mr-4") { "Remember me" }
+                                    input (bind:checked = state.remember_me, type = "checkbox", class = "checkbox")
+                                }
+                            }
+                        }},
+                        false => view!{cx, },
+                    })
+                    // Forget password button
+                    button (on:click = handle_forgot_password, class="flex  link link-primary"){"Lost Password?"}
+                }
+
+                // Log in button
+                div (class = "flex justify-center") {
+                    button (on:click = handle_log_in, class="btn"){"Log in"}
                 }
             }
         }
