@@ -40,6 +40,8 @@ jobs:
         run: npm install -g sass
       - name: Install tailwindcss via npm
         run: npm install -D tailwindcss
+      - name: Install daisy ui via npm
+        run: npm i -D daisyui@latest
       - name: Compile css
         run: npm run build
         # TODO -> Remove wasm-opt-version once perseus is updated

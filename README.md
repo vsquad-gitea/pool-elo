@@ -16,11 +16,17 @@ Run `curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh`
 https://nodejs.org/en
 (todo look into:)
 https://pnpm.io/
+`npm i -D daisyui@latest`
 
 ### Unix based systems:
 
 `sudo apt install nodejs`
 `sudo apt install npm`
+`npm i -D daisyui@latest`
+
+For easy UI see:
+
+https://daisyui.com/components/button/
 
 ## 3. Install Perseus, for real-time updates while developing
 
