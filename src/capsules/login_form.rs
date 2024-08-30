@@ -60,10 +60,10 @@ fn login_form_capsule<G: Html>(
 ) -> View<G> {
     // If there's a tentative username, set it
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
-    if let Some(username) = (*global_state.auth.username.get()).clone() {
-        state.username.set(username);
-        global_state.auth.username.set(None);
-    }
+    state
+        .username
+        .set((*global_state.auth.pending_username.get()).clone());
+    global_state.auth.pending_username.set(String::new());
 
     let close_modal = move |_event: Event| {
         #[cfg(client)]
@@ -85,8 +85,8 @@ fn login_form_capsule<G: Html>(
                 // Update tentative username
                 global_state
                     .auth
-                    .username
-                    .set(Some((*state.username.get()).clone()));
+                    .pending_username
+                    .set((*state.username.get()).clone());
 
                 // Open new modal
                 global_state

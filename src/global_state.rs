@@ -21,6 +21,7 @@ pub struct AppState {
 #[rx(alias = "AuthDataRx")]
 pub struct AuthData {
     pub state: LoginState,
+    pub pending_username: String,
     pub username: Option<String>,
     pub remember_me: Option<bool>,
     pub auth_info: Option<WebAuthInfo>,
@@ -89,6 +90,7 @@ pub async fn get_build_state() -> AppState {
     AppState {
         auth: AuthData {
             state: LoginState::Unknown,
+            pending_username: String::new(),
             username: None,
             remember_me: None,
             auth_info: None,
