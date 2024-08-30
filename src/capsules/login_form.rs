@@ -152,7 +152,8 @@ fn login_form_capsule<G: Html>(
                     div (class="space-y-6 px-6 lg:px-8 pb-4 sm:pb-6 xl:pb-8") {
                         h3 (class="text-xl font-medium text-gray-900 dark:text-white"){"Sign in"}
 
-                        ErrorBlock(error =  state.error.clone())
+                        // Add component for handling error messages
+                        ErrorBlock(error = state.error.clone())
 
                         div {
                             label (class="text-sm font-medium text-gray-900 block mb-2 dark:text-gray-300") {"Username"}

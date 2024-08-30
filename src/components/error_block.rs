@@ -15,18 +15,19 @@ pub struct ErrorBlockProps {
     error: RcSignal<String>,
 }
 
-#[component]
-pub fn ErrorBlock<G: Html>(cx: Scope, props: ErrorBlockProps) -> View<G> {
-    let is_empty = create_selector(cx, || props.error.get().is_empty());
+#[component(inline_props)]
+pub fn ErrorBlock<'a, G: Html>(cx: Scope<'a>, error: RcSignal<String>) -> View<G> {
+    let error = create_ref(cx, error);
+    let is_empty = create_selector(cx, || error.get().is_empty());
     view! { cx,
-        (match *is_empty.get() {
+        (match !(*is_empty.get()) {
             true => { view!{cx,
                 div (role="alert") {
                     div (class="bg-red-500 text-white font-bold rounded-t px-4 py-2") {
                         "Error"
                     }
                     div (class="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700"){
-                        p {(*props.error.get())}
+                        p {(*error.get())}
                     }
                 }
             }},
