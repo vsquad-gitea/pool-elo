@@ -134,7 +134,7 @@ fn forgot_password_form_capsule<G: Html>(
                 input (bind:value = state.how_to_reach, class = "input input-bordered w-full")
 
                 // Submit button
-                div (class = "flex justify-center") {
+                div (class = "flex justify-center mt-6") {
                     button (on:click = handle_submit, class="btn"){"Submit"}
                 }
             }
