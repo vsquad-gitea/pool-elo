@@ -4,15 +4,17 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::components::{
-    static_components::close_button::CloseButtonSvg, sub_components::error_block::ErrorBlock,
+use crate::{
+    components::{
+        static_components::close_button::CloseButtonSvg, sub_components::error_block::ErrorBlock,
+    },
+    global_state::AppStateRx,
 };
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
         use crate::{
             endpoints::LOGIN,
-            global_state::{AppStateRx},
             models::auth::{LoginInfo, LoginResponse, WebAuthInfo},
             models::generic::GenericResponse,
             state_enums::{OpenState},
@@ -56,6 +58,13 @@ fn login_form_capsule<G: Html>(
     state: &LoginFormStateRx,
     props: LoginFormProps,
 ) -> View<G> {
+    // If there's a tentative username, set it
+    let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+    if let Some(username) = (*global_state.auth.username.get()).clone() {
+        state.username.set(username);
+        global_state.auth.username.set(None);
+    }
+
     let close_modal = move |_event: Event| {
         #[cfg(client)]
         {
@@ -72,10 +81,19 @@ fn login_form_capsule<G: Html>(
         {
             spawn_local_scoped(cx, async move {
                 let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+
+                // Update tentative username
+                global_state
+                    .auth
+                    .username
+                    .set(Some((*state.username.get()).clone()));
+
+                // Open new modal
                 global_state
                     .modals_open
                     .forgot_password
                     .set(OpenState::Open);
+
                 // Close modal
                 state.reset();
                 global_state.modals_open.login.set(OpenState::Closed);
