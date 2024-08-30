@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
 
-use crate::components::error_block::{ErrorBlock, ErrorBlockProps};
+use crate::components::sub_components::error_block::ErrorBlock;
 
 cfg_if::cfg_if! {
     if #[cfg(client)] {
