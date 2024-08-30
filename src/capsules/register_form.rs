@@ -163,7 +163,7 @@ fn register_form_capsule<G: Html>(
                 })
 
                 // Register button
-                div (class = "flex justify-center") {
+                div (class = "flex justify-center mt-6") {
                     button (on:click = handle_register, class="btn"){"Register"}
                 }
             }
