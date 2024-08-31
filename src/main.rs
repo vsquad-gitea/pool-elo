@@ -70,17 +70,20 @@ pub fn main<G: Html>() -> PerseusApp<G> {
 
     PerseusApp::new()
         .global_state_creator(crate::global_state::get_global_state_creator())
+        .template(crate::templates::index::get_template())
+        .template(crate::templates::pickleball::index::get_template())
         .template(crate::templates::pool::index::get_template())
         .template(crate::templates::pool::add_game_form::get_template())
         .template(crate::templates::pool::one_v_one_board::get_template())
         .template(crate::templates::pool::overall_board::get_template())
+        .template(crate::templates::table_tennis::index::get_template())
         .capsule_ref(&*crate::capsules::login_form::LOGIN_FORM)
         .capsule_ref(&*crate::capsules::forgot_password_form::FORGOT_PASSWORD_FORM)
         .capsule_ref(&*crate::capsules::register_form::REGISTER_FORM)
         .error_views(crate::error_views::get_error_views())
         .index_view(|cx| {
             view! { cx,
-                html (class = "flex w-full h-full"){
+                html (class = "flex w-full h-full", data-theme = "light"){
                     head {
                         meta(charset = "UTF-8")
                         meta(name = "viewport", content = "width=device-width, initial-scale=1.0")

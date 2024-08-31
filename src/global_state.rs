@@ -15,15 +15,74 @@ pub struct AppState {
     pub auth: AuthData,
     #[rx(nested)]
     pub modals_open: ModalOpenData,
+    #[rx(nested)]
+    pub style: StyleData,
 }
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "AuthDataRx")]
 pub struct AuthData {
     pub state: LoginState,
+    pub pending_username: String,
     pub username: Option<String>,
     pub remember_me: Option<bool>,
     pub auth_info: Option<WebAuthInfo>,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "ModalOpenDataRx")]
+pub struct ModalOpenData {
+    pub login: OpenState,
+    pub register: OpenState,
+    pub forgot_password: OpenState,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "StyleDataRx")]
+pub struct StyleData {
+    #[rx(nested)]
+    pub theme: ThemeData,
+}
+
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "ThemeDataRx")]
+pub struct ThemeData {
+    pub current: String,
+    pub pool: String,
+    pub pickleball: String,
+    pub table_tennis: String,
+    pub default: String,
+}
+
+pub fn get_global_state_creator() -> GlobalStateCreator {
+    GlobalStateCreator::new().build_state_fn(get_build_state)
+}
+
+#[engine_only_fn]
+pub async fn get_build_state() -> AppState {
+    AppState {
+        auth: AuthData {
+            state: LoginState::Unknown,
+            pending_username: String::new(),
+            username: None,
+            remember_me: None,
+            auth_info: None,
+        },
+        modals_open: ModalOpenData {
+            login: OpenState::Closed,
+            register: OpenState::Closed,
+            forgot_password: OpenState::Closed,
+        },
+        style: StyleData {
+            theme: ThemeData {
+                current: "light".to_owned(),
+                pool: "autumn".to_owned(),
+                pickleball: "lemonade".to_owned(),
+                table_tennis: "nord".to_owned(),
+                default: "light".to_owned(),
+            },
+        },
+    }
 }
 
 impl AuthDataRx {
@@ -69,35 +128,6 @@ impl AuthDataRx {
         self.username.set(None);
         self.remember_me.set(None);
         self.state.set(LoginState::NotAuthenticated);
-    }
-}
-
-#[derive(Serialize, Deserialize, ReactiveState, Clone)]
-#[rx(alias = "ModalOpenDataRx")]
-pub struct ModalOpenData {
-    pub login: OpenState,
-    pub register: OpenState,
-    pub forgot_password: OpenState,
-}
-
-pub fn get_global_state_creator() -> GlobalStateCreator {
-    GlobalStateCreator::new().build_state_fn(get_build_state)
-}
-
-#[engine_only_fn]
-pub async fn get_build_state() -> AppState {
-    AppState {
-        auth: AuthData {
-            state: LoginState::Unknown,
-            username: None,
-            remember_me: None,
-            auth_info: None,
-        },
-        modals_open: ModalOpenData {
-            login: OpenState::Closed,
-            register: OpenState::Closed,
-            forgot_password: OpenState::Closed,
-        },
     }
 }
 

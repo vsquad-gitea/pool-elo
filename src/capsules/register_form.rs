@@ -109,8 +109,8 @@ fn register_form_capsule<G: Html>(
                 // Update tentative username
                 global_state
                     .auth
-                    .username
-                    .set(Some((*state.username.get()).clone()));
+                    .pending_username
+                    .set((*state.username.get()).clone());
 
                 // Open login modal
                 global_state.modals_open.login.set(OpenState::Open);

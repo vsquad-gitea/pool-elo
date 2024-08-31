@@ -3,8 +3,9 @@ use sycamore::prelude::*;
 use web_sys::Event;
 
 use crate::{
+    components::static_components::menu_button::MenuButtonSvg,
     global_state::AppStateRx,
-    state_enums::{GameState, LoginState},
+    state_enums::{ContentState, LoginState},
 };
 
 cfg_if::cfg_if! {
@@ -17,12 +18,81 @@ cfg_if::cfg_if! {
 
 #[derive(Prop)]
 pub struct HeaderProps {
-    pub game: GameState,
+    pub content_state: ContentState,
+}
+
+// TODO update to have user preferences
+#[component]
+fn LinkList<G: Html>(cx: Scope) -> View<G> {
+    // Get global state to get style info
+    let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
+
+    view! { cx,
+        li {
+            a (href = "pool") {
+                label (class = "swap") {
+                    input (
+                        type="radio",
+                        name = "theme-dropdown",
+                        class = "theme-controller",
+                        value = (*global_state.style.theme.pool.get()),
+                    ) {}
+                    p (class = (
+                        if *global_state.style.theme.current.get() == *global_state.style.theme.pool.get(){
+                            "font-bold"
+                        }
+                        else {
+                            ""
+                        }
+                    )){ "Pool" }
+                }
+            }
+        }
+        li {
+            a (href = "table_tennis") {
+                label (class = "swap") {
+                    input (
+                        type="radio",
+                        name = "theme-dropdown",
+                        class = "theme-controller",
+                        value = (*global_state.style.theme.table_tennis.get()),
+                    ) {}
+                    p (class = (
+                        if *global_state.style.theme.current.get() == *global_state.style.theme.table_tennis.get(){
+                            "font-bold"
+                        }
+                        else {
+                            ""
+                        }
+                    )){ "Table Tennis" }
+                }
+            }
+        }
+        li {
+            a (href = "pickleball") {
+                label (class = "swap") {
+                    input (
+                        type="radio",
+                        name = "theme-dropdown",
+                        class = "theme-controller",
+                        value = (*global_state.style.theme.pickleball.get()),
+                    ) {}
+                    p (class = (
+                        if *global_state.style.theme.current.get() == *global_state.style.theme.pickleball.get(){
+                            "font-bold"
+                        }
+                        else {
+                            ""
+                        }
+                    )){ "Pickleball" }
+                }
+            }
+        }
+    }
 }
 
 #[component]
 pub fn Header<G: Html>(cx: Scope, props: HeaderProps) -> View<G> {
-    // Get global state to get authentication info
     let global_state = Reactor::<G>::from_cx(cx).get_global_state::<AppStateRx>(cx);
 
     let handle_log_in = move |_event: Event| {
@@ -56,49 +126,45 @@ pub fn Header<G: Html>(cx: Scope, props: HeaderProps) -> View<G> {
     };
 
     view! { cx,
-        header {
-            div (class = "flex items-center justify-between w-full md:text-center h-20") {
-                div(class = "flex-1") {}
-
-                // Title
-                div(class = "text-gray-700 text-2xl font-semibold py-2") {
-                   (props.game.to_string()) " - Season 1"
+        header (class="navbar bg-base-100") {
+            // Navigation
+            div (class="navbar-start") {
+                div (class="dropdown") {
+                    div (tabindex="0", role="button", class="btn btn-ghost lg:hidden") { MenuButtonSvg {} }
+                    ul (tabindex = "0", class = "menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow" ) {
+                        LinkList {}
+                    }
                 }
-
-                // Login / register or user buttons
-                div(class = "flex-1 py-2") {(
-                    match *global_state.auth.state.get() {
-                        LoginState::NotAuthenticated => {
-                            view! { cx,
-                                button(on:click = handle_register, class = "text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700") {
-                                    "Register"
-                                }
-                                button(on:click = handle_log_in, class = "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800") {
-                                    "Log in"
-                                }
-                            }
-                        }
-                        LoginState::Authenticated => {
-                            view! { cx,
-                                div {
-                                    "Hello "
-                                        (global_state.auth.username.get().as_ref().clone().unwrap_or("".to_owned()))
-                                }
-                                button(on:click = handle_log_out, class = "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800") {
-                                    "Log out"
-                                }
-                            }
-                        }
-                        // Will only appear for a few seconds
-                        LoginState::Unknown => {
-                            view! { cx,
-                                div (class = "px-5 py-2.5 me-2 mb-2"){
-                                    "Loading..."
-                                }
-                            }
-                        },
-                    })
+                ul (class="menu menu-horizontal px-1 hidden lg:flex") {
+                    LinkList {}
                 }
+            }
+            // Title
+            div (class="navbar-center lg:flex") {
+                (props.content_state.to_string())
+            }
+            // User buttons
+            div (class="navbar-end") {
+                (match *global_state.auth.state.get() {
+                    LoginState::Authenticated => { view! { cx,
+                        button(on:click = handle_log_out, class = "btn btn-primary mr-2") {
+                            "Log out"
+                        }
+                    } },
+                    LoginState::NotAuthenticated => { view! { cx,
+                        button(on:click = handle_register, class = "btn btn-primary mr-2") {
+                            "Register"
+                        }
+                        button(on:click = handle_log_in, class = "btn btn-secondary mr-2") {
+                            "Log in"
+                        }
+                    } },
+                    LoginState::Unknown => { view! { cx,
+                        div (class = "px-5 py-2.5 me-2 mb-2") {
+                            "Loading..."
+                        }
+                    } },
+                })
             }
         }
     }
