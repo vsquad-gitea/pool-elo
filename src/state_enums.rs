@@ -10,23 +10,23 @@ pub enum LoginState {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub enum GameState {
+pub enum ContentState {
     None,
     Pool,
     Pickleball,
     TableTennis,
 }
 
-impl Display for GameState {
+impl Display for ContentState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                GameState::None => "",
-                GameState::Pool => "Pool",
-                GameState::Pickleball => "Pickle Ball",
-                GameState::TableTennis => "Table Tennis",
+                ContentState::None => "",
+                ContentState::Pool => "Pool",
+                ContentState::Pickleball => "Pickle Ball",
+                ContentState::TableTennis => "Table Tennis",
             }
         )
     }

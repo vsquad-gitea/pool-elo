@@ -1,3 +1,4 @@
+pub mod index;
 pub mod pickleball;
 pub mod pool;
 pub mod table_tennis;

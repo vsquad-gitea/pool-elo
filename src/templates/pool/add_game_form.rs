@@ -1,4 +1,4 @@
-use crate::{components::layout::Layout, state_enums::GameState};
+use crate::{components::layout::Layout, state_enums::ContentState};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -31,7 +31,7 @@ fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStat
     };
 
     view! { cx,
-        Layout(game = GameState::Pool) {
+        Layout(content_state = ContentState::Pool) {
             div (class = "flex flex-wrap") {
                 select {
                     option (value="red")
@@ -91,7 +91,7 @@ fn head(cx: Scope) -> View<SsrNode> {
 // Template
 
 pub fn get_template<G: Html>() -> Template<G> {
-    Template::build("add-game-form")
+    Template::build("pool/add-game-form")
         .request_state_fn(get_request_state)
         .view_with_state(add_game_form_page)
         .head(head)
