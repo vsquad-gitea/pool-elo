@@ -1,8 +1,24 @@
-use crate::{components::layout::Layout, state_enums::ContentState};
+use crate::{
+    components::{layout::Layout, sub_components::error_block::ErrorBlock},
+    state_enums::ContentState,
+};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
 use web_sys::Event;
+
+cfg_if::cfg_if! {
+    if #[cfg(client)] {
+        use crate::{
+            endpoints::ADD_MATCH,
+            models::{game_result::GameResult, generic::GenericResponse},
+            templates::get_api_path,
+        };
+
+        use crate::entity::sea_orm_active_enums::GameType;
+        use reqwest::StatusCode;
+    }
+}
 
 // Reactive page
 
@@ -10,61 +26,55 @@ use web_sys::Event;
 #[rx(alias = "PageStateRx")]
 struct PageState {
     winner: String,
-    new_user: String,
+    loser: String,
+    error: String,
 }
 
 fn add_game_form_page<'a, G: Html>(cx: BoundedScope<'_, 'a>, state: &'a PageStateRx) -> View<G> {
     let handle_add_match = move |_event: Event| {
         #[cfg(client)]
         {
-            // state.winner.get().as_ref().clone()
-            spawn_local_scoped(cx, async move {})
-        }
-    };
+            let var_name = async move {
+                let game_result = GameResult {
+                    winner: (*state.winner.get()).clone(),
+                    loser: (*state.loser.get()).clone(),
+                    game_type: GameType::Pool,
+                };
 
-    let handle_add_user = move |_event: Event| {
-        #[cfg(client)]
-        {
-            // state.winner.get().as_ref().clone()
-            spawn_local_scoped(cx, async move {})
+                let client = reqwest::Client::new();
+                let response = client
+                    .post(get_api_path(ADD_MATCH).as_str())
+                    .json(&game_result)
+                    .send()
+                    .await
+                    .unwrap();
+
+                if response.status() != StatusCode::OK {
+                    let response = response.json::<GenericResponse>().await.unwrap();
+                    state.error.set(response.status.to_string());
+                    return;
+                }
+
+                // let response = response.json::<())>().await.unwrap();
+            };
+            let var_name = var_name;
+            spawn_local_scoped(cx, var_name)
         }
     };
 
     view! { cx,
         Layout(content_state = ContentState::Pool) {
-            div (class = "flex flex-wrap") {
-                select {
-                    option (value="red")
-                    option (value="blue")
-                }
-            }
-            div (class = "flex flex-wrap") {
-                input (bind:value = state.winner,
-                       class = "appearance-none block w-full bg-gray-200 text-gray-700 border \
-                       border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none \
-                       focus:bg-white",)
-            }
-            div (class = "flex flex-wrap") {
-                button(on:click = handle_add_match,
-                       class = "flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 \
-                       hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded",
-                ) {
-                    "Add result"
-                }
-            }
-            div (class = "flex flex-wrap") {
-                input (bind:value = state.new_user,
-                       class = "appearance-none block w-full bg-gray-200 text-gray-700 border \
-                       border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none \
-                       focus:bg-white",)
-            }
-            div (class = "flex flex-wrap") {
-                button(on:click = handle_add_user,
-                       class = "flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 \
-                       hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded",
-                ) {
-                    "Add new user"
-                }
+
+            ErrorBlock(error = state.error.clone())
+
+            div (class = "label") { span (class = "label-text") { "Winner" } }
+            input (bind:value = state.winner, class = "input input-bordered w-full m-2")
+
+            div (class = "label") { span (class = "label-text") { "Loser" } }
+            input (bind:value = state.loser, class = "input input-bordered w-full m-2")
+
+            div (class = "flex justify-center") {
+                button (on:click = handle_add_match, class="btn"){"Record Match"}
             }
         }
     }
@@ -76,8 +86,9 @@ async fn get_request_state(
     _req: Request,
 ) -> Result<PageState, BlamedError<std::convert::Infallible>> {
     Ok(PageState {
-        winner: "Ferris".to_owned(),
-        new_user: "newguy".to_owned(),
+        winner: String::new(),
+        loser: String::new(),
+        error: String::new(),
     })
 }
 

@@ -42,7 +42,7 @@ https://daisyui.com/components/button/
 
 `cargo install sea-orm-cli@1.0.0-rc.5`
 
-## 5. Install tailwindcss, for styling
+## 6. Install tailwindcss, for styling
 
 `npm install -D tailwindcss`
 
